@@ -1,0 +1,1 @@
+// p2p 연결 요청 검증, offer/answer/ice 전달 대상 확인

@@ -1,0 +1,1 @@
+// ROOM, ROOM_PARTICIPANTS 테이블 레포 계층

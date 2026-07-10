@@ -1,0 +1,1 @@
+// 다른 사용자의 producer을 통해 consumer의 생성과 관리를 담당

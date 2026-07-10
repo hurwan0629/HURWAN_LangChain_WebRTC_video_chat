@@ -1,0 +1,36 @@
+{
+  "name": "hurwan_langchain_webrtc_video_chat",
+  "version": "1.0.0",
+  "description": "다중/P2P 화상회의 서비스",
+  "main": "./src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hurwan0629/HURWAN_LangChain_WebRTC_video_chat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/hurwan0629/HURWAN_LangChain_WebRTC_video_chat/issues"
+  },
+  "homepage": "https://github.com/hurwan0629/HURWAN_LangChain_WebRTC_video_chat#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parse": "^0.4.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mediasoup": "^3.21.0",
+    "morgan": "^1.11.0",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

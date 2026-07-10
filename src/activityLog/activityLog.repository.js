@@ -1,0 +1,1 @@
+// ACTIVITY_LOGS 에 대한 DB 관리

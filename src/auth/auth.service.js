@@ -47,6 +47,16 @@ export async function exchangeGoogleCodeForToken(code) {
     })
   })
   const tokenData = await tokenResponse.json()
+
+  // 요청 자체가 실패했을 때 (네트워크 등)
+  if (!tokenResponse.ok) {
+    throw new Error(tokenData?.error_description ?? "Google token request failed");
+  }
+  // 필수적인 두 요소중 하나라도 존재하지 않을 때 
+  if (!tokenData.access_token || !tokenData.token_type) {
+    throw new Error("Google token response is incomplete");
+  }
+
   // 사용자 권한 토큰
   const accessToken = tokenData?.access_token 
   // 토큰 만료일
@@ -72,7 +82,7 @@ export async function exchangeGoogleCodeForToken(code) {
       token_type: ${tokenType}
       id_token: ${Boolean(idToken)}`)
 
-  return { accessToken, expiresIn, refreshToken, scope, tokenType, idToken }
+  return { googleAccessToken: accessToken, expiresIn, googleRefreshToken: refreshToken, scope, tokenType, idToken }
 }
 
 /**
@@ -80,17 +90,27 @@ export async function exchangeGoogleCodeForToken(code) {
  * @param {string} token 구글 userid
  *  { sub, name, given_name, family_name, picture, email, email_verified } 반환
  */
-export async function fetchGoogleUserInfo({ tokenType, accessToken}) {
+export async function fetchGoogleUserInfo({ tokenType, googleAccessToken}) {
   const userInfoResponse = await fetch(
     "https://openidconnect.googleapis.com/v1/userinfo", {
     method: "GET",
     headers: {
-      Authorization: `${tokenType} ${accessToken}`
+      Authorization: `${tokenType} ${googleAccessToken}`
     }
   })
   
   // 
   const userInfo = await userInfoResponse.json();
+
+  // 사용자 정보 요청 자체가 실패했을 때
+  if(!userInfoResponse.ok) {
+    throw new Error(userInfo.error_description ?? "Google userinfo request failed")
+  }
+
+  // 필수적인 내용 (google_id와 이메일 )
+  if (!userInfo.sub || !userInfo.email) {
+    throw new Error("Google userinfo response is incomplete");
+  }
   
   const sub = userInfo?.sub
   const name = userInfo?.name

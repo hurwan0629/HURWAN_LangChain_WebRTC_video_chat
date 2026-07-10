@@ -34,9 +34,12 @@ export default function registAppMiddleware(app) {
   morgan.token("curr-time", (req, res) => {
     return currTime()
   })
+  morgan.token('url-path', (req, res) => {
+    return req.path; // 쿼리 스트링(?a=1&b=2)이 완전히 제거된 경로만 반환
+  });
   // 처리 도중 에러날 수 있으니 앞뒤로 로그 써주기
-  app.use(morgan("[:curr-time] [morgan pre] :remote-addr :method :url :status", { immediate: false }))
-  app.use(morgan("[:curr-time] [morgan fin] :remote-addr :method :url :status :response-time ms - :res[content-length]"))
+  app.use(morgan("[:curr-time] [morgan pre] :remote-addr :method :url-path status\::status", { immediate: false }))
+  app.use(morgan("[:curr-time] [morgan fin] :remote-addr :method :url-path status\::status response-time\::response-time ms - res-size\::res[content-length]"))
 
 
 

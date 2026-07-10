@@ -27,6 +27,11 @@ function required(key, defaultKey=undefined) {
   return value
 }
 
+const sameSiteValue = required("JWT_SAME_SITE", "lax");
+const sameSite = ["none", "lax", "strict"].includes(sameSiteValue)
+  ? sameSiteValue
+  : "lax";
+
 const config = {
   host: {
     publicPath: required("PUBLIC_PATH", __publicpath),
@@ -40,6 +45,27 @@ const config = {
     clientId: required("GOOGLE_CLIENT_ID"),
     clientSecret: required("GOOGLE_CLIENT_SECRET"),
     callbackUrl: `http://localhost:${required("PORT", DEFAULT_PORT)}` + required("GOOGLE_CALLBACK_URL_PATH")
+  },
+
+  db: {
+    host: required("DB_HOST", "localhost"),
+    port: parseInt(required("DB_PORT", "5432")),
+    name: required("DB_NAME"),
+    user: required("DB_USER"),
+    password: required("DB_PASSWORD"),
+  },
+
+  // [2026-07-10 15:48:46] jwt 작업 시작
+  jwt: {
+    secure: required("JWT_SECURE", "false") === "false" ? false : true,
+    sameSite: sameSite,
+    httponly: required("JWT_HTTP_ONLY", "true") === "false" ? false : true,
+    accessSecret: required("JWT_ACCESS_SECRET"),
+    accessExpiresIn: required("JWT_ACCESS_EXPIRES_IN", "1h"),
+    accessCookieMaxAge: parseInt(required("JWT_ACCESS_COOKIE_MAX_AGE", "3600000")),
+    refreshSecret: required("JWT_REFRESH_SECRET"),
+    refreshExpiresIn: required("JWT_REFRESH_EXPIRES_IN", "7d"),
+    refreshCookieMaxAge: parseInt(required("JWT_REFRESH_COOKIE_MAX_AGE", "604800000")),
   }
 }
 

@@ -4,7 +4,8 @@ import config from "../config/env.js"
 import { logger } from "../utils/logger.js"
 
 import { exchangeGoogleCodeForToken, buildGoogleAuthUrl, fetchGoogleUserInfo } from "./auth.service.js"
-
+import { onUserLoginService } from "../user/user.service.js"
+import { createAuthTokens } from "./jwt.service.js"
 
 // 1. auth 로그인 하려는 사용자를 구글 로그인 화면으로 보내주기
 export function startGoogleLogin(req, res) {
@@ -21,18 +22,55 @@ export async function handleGoogleCallback(req, res, next) {
   try {
     // 코드 확인하기
     const { code } = req.query
-    logger("auth/auth.controller.js handleGoogleCallback", `code exists: ${Boolean(code)}`)
+
+    logger("auth/auth.controller.js handleGoogleCallback", `code exists: ${!!code}`)
+
+    if (!code) {
+      return res.redirect("/index.html?error=missing_google_code");
+    }
 
     // token API를 이용해서 구글에 [code] -> [사용자 정보 교환용 토큰] 요청
-    const { accessToken, expiresIn, refreshToken, scope, tokenType, idToken } = await exchangeGoogleCodeForToken(code)
+    const { 
+      googleAccessToken, expiresIn, googleRefreshToken, scope, tokenType, idToken 
+    } = await exchangeGoogleCodeForToken(code)
     
-    // token을 통해 googleapis의 openidconnect를 통해 userInfo 받기.
-    const { sub, name, given_name, family_name, picture, email, email_verified } = await fetchGoogleUserInfo({ tokenType, accessToken})
+    // logger("auth/auth.controller.js handleGoogleCallback", `${JSON.stringify({ 
+    //   googleAccessToken, expiresIn, googleRefreshToken, scope, tokenType, idToken 
+    // })}`)
 
-    // 
+    // token을 통해 googleapis의 openidconnect를 통해 userInfo 받기.
+    const { 
+      sub, name, givenName, familyName, picture, email, emailVerified 
+    } = await fetchGoogleUserInfo({ tokenType, googleAccessToken})
+
+    // DB에서 sub를 이용해서 사용자 조회 및 최신 로그인 기록 업데이트
+    const user = await onUserLoginService({ sub, name, picture, email })
     
-    res.send({ sub, name, given_name, family_name, picture, email, email_verified })
-  } catch(error) {
-    next(error)
+    // jwt 토큰 발급
+    const { accessToken, refreshToken } = createAuthTokens(user)
+
+    // 사용자에게 토큰 (쿠키)를 주며 페이지로 리다이렉트 시켜주기
+    res.cookie("accessToken", accessToken, {
+      path: "/",
+      httpOnly: config.jwt.httponly,
+      sameSite: config.jwt.sameSite,
+      secure: config.jwt.secure, 
+      maxAge: config.jwt.accessCookieMaxAge
+    })
+
+    res.cookie("refreshToken", refreshToken, {
+      path: "/",
+      httpOnly: config.jwt.httponly,
+      sameSite: config.jwt.sameSite,
+      secure: config.jwt.secure, 
+      maxAge: config.jwt.refreshCookieMaxAge
+    })
+
+    logger("/auth/auth.controller.js handleGoogleCallback", `${user.name}님 로그인! users.id: ${user.id}`)
+    
+    res.redirect("/dashboard.html")
+  } catch (error) {
+    logger("/auth/auth.controller.js handleGoogleCallback", error.message);
+    return res.redirect("/index.html?error=google_login_failed");
   }
 }

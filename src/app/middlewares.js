@@ -35,8 +35,8 @@ export default function registAppMiddleware(app) {
     return currTime()
   })
   // 처리 도중 에러날 수 있으니 앞뒤로 로그 써주기
-  app.use(morgan("[:curr-time] [morgan] :remote-addr :method :url :status", { immediate: false }))
-  app.use(morgan("[:curr-time] [morgan] :remote-addr :method :url :status :response-time ms - :res[content-length]"))
+  app.use(morgan("[:curr-time] [morgan pre] :remote-addr :method :url :status", { immediate: false }))
+  app.use(morgan("[:curr-time] [morgan fin] :remote-addr :method :url :status :response-time ms - :res[content-length]"))
 
 
 

@@ -6,4 +6,5 @@ import { logger } from "./utils/logger.js"
 
 httpServer.listen(config.host.port, config.host.ip, () => {
   logger("main.js", `서버가 구동되었습니다. ${config.host.ip}:${config.host.port}`)
+  // console.log(config)
 })

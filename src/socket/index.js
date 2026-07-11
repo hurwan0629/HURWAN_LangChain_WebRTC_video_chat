@@ -1,16 +1,49 @@
-// 모든 소켓 요청에 대해서 이벤트를 한번에 등록하기. (나중에 봤을 때 한번에 보기 편하고 수정도 편하게)
-
 import { logger } from "../utils/logger.js"
+import { socketAccessTokenCheck } from "./socket.auth.js"
+import config from "../config/env.js"
+import * as OnlineUsersManager from "../presence/presence.manager.js"
+import { registerP2PSocket } from "../p2p/p2p.socket.js"
 
-// [2026-07-10 08:51:49] [생성] 소켓 서버를 받아서 이벤트를 등록해주기 (라우팅 느낌)
+// devTest/ 를 통한 확인을 위해 sockets 객체 설정 및 export
+export const sockets = {}
+
 export default function registSocketEvent(io) {
+  // io 연결은 무조건 로그인 된 상태에서 작업 해주기
+  // 미들웨어 형태는 (socket, next) => {}
+  io.use(socketAccessTokenCheck)
+
   io.on("connection", (socket) => {
-    logger("socket/index.js", `새 소켓 connection 발생. socketId: ${socket.id}`)
+    const user = socket.data.user
 
+    // 사용자 onlineUsers에 넣어주기
+    const presence = OnlineUsersManager.addUserSocket(user, socket.id)
 
+    // sockets[socket.id] = {
+    //   socket,
+    //   id: socket?.id,
+    //   user: {
+    //     id: user?.id,
+    //     name: user?.name,
+    //     email: user?.email
+    //   }
+    // }
 
-    socket.on("disconnect", () => {
-      logger("socket/index.js", `소켓 disconnect 발생. socketId: ${socket.id}`)
+    logger(
+      "socket/index.js",
+      `socket connected. socketId: ${socket.id}, userId: ${user?.id}, name: ${user?.name}, connectionSocketsCount: ${presence?.sockets?.size}`
+    )
+
+    // 사용자 p2p 이벤트 걸어주기
+    registerP2PSocket(io, socket)
+
+    socket.on("disconnect", (reason) => {
+      const leftSocketCount = OnlineUsersManager.removeUserSocket(socket.id)
+      logger(
+        "socket/index.js",
+        `socket disconnected. socketId: ${socket.id}, userId: ${user?.id}, reason: ${reason}, leftSocketCount: ${leftSocketCount}`
+      )
+      // 소켓 삭제
+      // delete sockets[socket.id]
     })
   })
 }

@@ -1,7 +1,6 @@
 // 소켓서버를 생성하여 이벤트를 넣어주는 파일
 
 import { Server } from "socket.io"
-import config from "../config/env.js"
 import { socketCorsOptions } from "../config/cors.js"
 import { logger } from "../utils/logger.js"
 import registSocketEvent from "../socket/index.js"

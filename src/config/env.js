@@ -46,7 +46,7 @@ const config = {
     clientSecret: required("GOOGLE_CLIENT_SECRET"),
     callbackUrl: `http://localhost:${required("PORT", DEFAULT_PORT)}` + required("GOOGLE_CALLBACK_URL_PATH")
   },
-
+  
   db: {
     host: required("DB_HOST", "localhost"),
     port: parseInt(required("DB_PORT", "5432")),
@@ -66,7 +66,14 @@ const config = {
     refreshSecret: required("JWT_REFRESH_SECRET"),
     refreshExpiresIn: required("JWT_REFRESH_EXPIRES_IN", "7d"),
     refreshCookieMaxAge: parseInt(required("JWT_REFRESH_COOKIE_MAX_AGE", "604800000")),
+  },
+
+  // [2026-07-11 16:43:03] 생성
+  p2p: {
+    p2pRoomIdLength: parseInt(required("P2P_ROOM_ID_LENGTH", "8")),
+    p2pRequestTimeoutMs: parseInt(required("P2P_REQUEST_TIMEOUT_MS", "120000"))
   }
+
 }
 
 export default config

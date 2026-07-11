@@ -2,9 +2,25 @@
 
 import { query } from "../config/db.js"
 
+
+/**
+ * users.id 받고 { id, google_id, email, profile_image_link, name, created_at, updated_at, last_login_at } 응답
+ * @param {*} userId 
+ */
+export async function getUserByUserId(userId) {
+  const { rows } =  await query(`
+    SELECT id, google_id, email, profile_image_link, name, created_at, updated_at, last_login_at
+    FROM users
+    WHERE id = $1
+    `, [userId])
+
+  return rows[0] ?? null
+}
+
+
 /**
  * 입력: googleId (sub, openid)
- * 조회 fieldi: d, google_id, email, profile_image_link, name, created_at, updated_at, last_login_at
+ * 조회 field: id, google_id, email, profile_image_link, name, created_at, updated_at, last_login_at
  * 
  * @param {*} googleId 
  */

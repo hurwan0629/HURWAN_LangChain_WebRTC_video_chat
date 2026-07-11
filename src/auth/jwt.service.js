@@ -6,14 +6,15 @@ import config from "../config/env.js"
 /**
  * 
  * @param {*} user // user[id, email, name] 사용 
- * @returns 
+ * @returns accessToken 문자열 발급 (string)
  */
 export function createAccessToken(user) {
   return jwt.sign(
     {
       userId: user.id,
       email: user.email,
-      name: user.name
+      name: user.name,
+      profile_image_link: user?.profile_image_link
     },
     config.jwt.accessSecret,
     {
@@ -44,7 +45,7 @@ export function createRefreshToken(user) {
 
 /**
  * 재발급/접근 토큰 모두 생성해주는 함수
- * @param {*} user user[id, email, name] 필요
+ * @param {*} user user[id, email, name, profile_image_link] 필요
  * @returns {string} { refreshToken: string, accessToken: string }
  */
 export function createAuthTokens(user) {
@@ -63,9 +64,10 @@ export function createAuthTokens(user) {
  *  userId,
  *  email,
  *  name,
+ *  profile_image_link
  * }
  */
-export function veriftAccessToken(token) {
+export function verifyAccessToken(token) {
   return jwt.verify(token, config.jwt.accessSecret)
 }
 
@@ -78,7 +80,7 @@ export function veriftAccessToken(token) {
  *  userId,
  * }
  */
-export function veriftRefreshToken(token) {
+export function verifyRefreshToken(token) {
   return jwt.verify(token, config.jwt.refreshSecret)
 }
 

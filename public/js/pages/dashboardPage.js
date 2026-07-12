@@ -1,8 +1,7 @@
 console.log("[loaded] dashboardPage.js")
 
 // 대시보드에서 반드시 작업 해주는 스크립트 작업해주기
-
-import { getMe, refreshToken } from "../api/authApi.js"
+import { loadMe } from "/js/authClient.js"
 
 // 미리 dashboard.html의 요소를 가져와놓기
 const title = document.getElementById("title")
@@ -55,11 +54,13 @@ async function init() {
     }
     console.log(response.requestId)
     alert(`방이 생성되었습니다! 코드: ${response.requestId}`)
-    window.location.href = `/p2p.html?requestId=${response.requestId}&role=caller`
+    window.location.href = `/p2p.html?requestId=${response.requestId}`
   }
 
   joinPrivateButton.onclick = () => {
     console.log("joinPrivateButton clicked")
+    const requestId = prompt("참여할 방의 코드를 입력해주세요")
+    window.location.href = `/p2p.html?requestId=${requestId}`
   }
   createGroupButton.onclick = () => {
     console.log("createGroupButton clicked")
@@ -95,24 +96,3 @@ async function connectSocket(socket) {
   socket.connect()
 }
 
-/**
- * accessToken 시도 -> refresh시도 -> access 시도 함수 
- * 성공 시 user { userId: number, email: str, name: str, profile_image_link: str } 반환
- */
-async function loadMe(){
-  // 로드 되자마자 자신의 상태 가져와주기
-  try{
-    const me = await getMe()
-    return me.user
-  } catch (err) {
-    try {
-      await refreshToken()
-      const meAgain = await getMe()
-      return meAgain.user
-    } catch (refrError) {
-      alert("로그인이 필요한 페이지입니다.")
-      window.location.href = "/index.html"
-      return null
-    }
-  }
-}

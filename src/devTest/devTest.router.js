@@ -38,6 +38,7 @@ router.get("/onlineUsers", (req, res) => {
 router.get("/p2pRequests", (req, res) => {
   const response = Array.from(p2pRequests.entries()).map(([requestId, request]) => ({
     requestId,
+    passwordHash: request.passwordHash,
     caller: request.caller,
     callee: request.callee,
     createdAt: request.createdAt,

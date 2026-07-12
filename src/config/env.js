@@ -71,7 +71,12 @@ const config = {
   // [2026-07-11 16:43:03] 생성
   p2p: {
     p2pRoomIdLength: parseInt(required("P2P_ROOM_ID_LENGTH", "8")),
-    p2pRequestTimeoutMs: parseInt(required("P2P_REQUEST_TIMEOUT_MS", "120000"))
+    p2pRequestTimeoutMs: parseInt(required("P2P_REQUEST_TIMEOUT_MS", "120000")),
+    p2pPasswordLength: parseInt(required("P2P_PASSWORD_LENGTH", "8")),
+  },
+
+  bcrypt: {
+    bcryptRound: parseInt(required("BCRYPT_ROUND", "8")),
   }
 
 }

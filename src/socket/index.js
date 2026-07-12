@@ -3,6 +3,7 @@ import { socketAccessTokenCheck } from "./socket.auth.js"
 import config from "../config/env.js"
 import * as OnlineUsersManager from "../presence/presence.manager.js"
 import { registerP2PSocket } from "../p2p/p2p.socket.js"
+import { registerMediasoupSocket } from "../mediasoup/mediasoup.socket.js"
 
 // devTest/ 를 통한 확인을 위해 sockets 객체 설정 및 export
 export const sockets = {}
@@ -35,6 +36,9 @@ export default function registSocketEvent(io) {
 
     // 사용자 p2p 이벤트 걸어주기
     registerP2PSocket(io, socket)
+
+    // mediasoup 소켓 이벤트 걸어주기 (그룹통화 관리용 이벤트)
+    registerMediasoupSocket(io, socket)
 
     socket.on("disconnect", (reason) => {
       const leftSocketCount = OnlineUsersManager.removeUserSocket(socket.id)

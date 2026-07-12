@@ -14,3 +14,14 @@ const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
     return code
  }
+
+ export function createRoomCode(length = config.group.groupRoomCodeLength) {
+    let code = ""
+
+    for (let i = 0; i < length; i++) {
+     const index = crypto.randomInt(0, CHARS.length)
+     code += CHARS[index]
+    }
+
+    return code
+ }

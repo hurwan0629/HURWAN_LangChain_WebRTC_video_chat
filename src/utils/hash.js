@@ -17,3 +17,7 @@ export async function comparePassword(password, passwordHash) {
 export function createP2PPlainPassword(length = config.p2p.p2pPasswordLength) {
   return createRequestId(length)
 }
+
+export function createGroupRooomPlainPassword(length = config.group.groupRoomPasswordLength) {
+  return createRequestId(length)
+}

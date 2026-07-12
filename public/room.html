@@ -6,6 +6,17 @@
   <title>다중회의</title>
 </head>
 <body>
-  
+  <button id="show-room-password" hidden>방 코드와 비밀번호 확인</button>
+
+  <h1>내 비디오</h1>
+  <video id="local-video"></video>
+  <br><hr><br>
+  <h3>참여자들의 비디오</h3>
+  <div id="remote-container">
+    
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/pages/roomPage.js"></script>
 </body>
 </html>

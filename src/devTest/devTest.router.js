@@ -3,6 +3,7 @@
 import { Router } from "express"
 import { onlineUsers } from "../presence/presence.manager.js";
 import { p2pRequests } from "../p2p/p2p.manager.js";
+import { rooms } from "../room/room.manager.js";
 
 // onlineUsers = new Map()
 // presence = {
@@ -48,6 +49,37 @@ router.get("/p2pRequests", (req, res) => {
   return res.status(200).json({
     requestCount: response.length,
     requests: response
+  })
+})
+
+router.get("/rooms", (req, res) => {
+  const response = Array.from(rooms.entries()).map(([roomCode, room]) => ({
+    roomCode,
+    routerExists: !!room.router,
+    passwordHash: room.passwordHash,
+    status: room.status,
+    hostUserId: room.hostUserId,
+    peers: Array.from(room.peers.entries()).map(([userId, peer]) => ({
+      userId,
+      nickname: peer.nickname,
+      role: peer.role,
+      socketIds: Array.from(peer.socketIds ?? []),
+      sendTransportId: peer.sendTransport?.id ?? null,
+      recvTransportId: peer.recvTransport?.id ?? null,
+      producers: {
+        video: peer.producers?.video?.id ?? null,
+        audio: peer.producers?.audio?.id ?? null,
+        screen: peer.producers?.screen?.id ?? null,
+      },
+      consumers: Array.from(peer.consumers?.keys?.() ?? []),
+      joinedAt: peer.joinedAt,
+    })),
+    graceTimers: room.graceTimers.size,
+    createdAt: room.createdAt
+  }))
+  return res.status(200).json({
+    roomCount: response.length,
+    rooms: response
   })
 })
 

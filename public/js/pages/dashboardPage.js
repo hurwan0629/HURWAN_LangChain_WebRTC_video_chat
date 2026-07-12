@@ -59,14 +59,34 @@ async function init() {
 
   joinPrivateButton.onclick = () => {
     console.log("joinPrivateButton clicked")
-    const requestId = prompt("참여할 방의 코드를 입력해주세요")
+    const requestId = prompt("참여할 p2p방의 코드를 입력해주세요")
     window.location.href = `/p2p.html?requestId=${requestId}`
   }
-  createGroupButton.onclick = () => {
+
+  // 그룹 방 생성해주기 -> 서버에서 만들엇다고 하면 그쪽으로 이동해주기
+  createGroupButton.onclick = async () => {
     console.log("createGroupButton clicked")
+    // 방장의 닉네임 먼저 정하기
+    const hostNickname = prompt("사용할 닉네임을 입력해주세요!")
+
+    // 서버에 자신을 방장으로 서버 제작 요청
+    const createRoomResult = await socket.emitWithAck("group:create", { hostNickname })
+
+    if(!createRoomResult.ok) {
+      alert("방 생성에 실패하였습니다!")
+      console.log(createRoomResult.error)
+      return
+    }
+
+    else {
+      alert(`방이 생성되었습니다! 코드: [${createRoomResult.roomCode}]`)
+      window.location.href = `/room.html?roomCode=${createRoomResult.roomCode}`
+    }
   }
   joinGroupButton.onclick = () => {
     console.log("joinGroupButton clicked")
+    const roomCode = prompt("참여할 그룹 방의 코드를 입력해주세요")
+    window.location.href = `/room.html?roomCode=${roomCode}`
   }
 }
 

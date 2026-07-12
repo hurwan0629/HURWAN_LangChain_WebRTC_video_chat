@@ -44,11 +44,11 @@ export const p2pRequests = new Map()
  * requestId roomCode와 동일한 방식으로 고유하게 생성해서 반환해주기
 */ 
 export function createP2PRequest(userId, nickname) {
-  let requestId
+  let requestId = createRequestId()
 
-  do {
+  while (p2pRequests.has(requestId)) {
     requestId = createRequestId()
-  } while (p2pRequests.has(requestId));
+  }
 
   const createdAt = new Date()
   const expiresAt = new Date(createdAt.getTime() + config.p2p.p2pRequestTimeoutMs)

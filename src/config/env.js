@@ -27,10 +27,19 @@ function required(key, defaultKey=undefined) {
   return value
 }
 
+function optional(key) {
+  const value = process.env[key]?.trim() || undefined
+  return value
+}
+
 const sameSiteValue = required("JWT_SAME_SITE", "lax");
 const sameSite = ["none", "lax", "strict"].includes(sameSiteValue)
   ? sameSiteValue
   : "lax";
+
+const MEDIASOUP_ENABLE_UDP = required("MEDIASOUP_ENABLE_UDP", "true") !== "false" ? true : false
+const MEDIASOUP_ENABLE_TCP = required("MEDIASOUP_ENABLE_TCP", "true") !== "false" ? true : false
+const MEDIASOUP_ENABLE_SCTP = required("MEDIASOUP_ENABLE_SCTP", "false") !== "true" ? false : true
 
 const config = {
   host: {
@@ -75,8 +84,24 @@ const config = {
     p2pPasswordLength: parseInt(required("P2P_PASSWORD_LENGTH", "8")),
   },
 
+  // 2026-07-12 10:20:41
+  group: {
+    groupRoomCodeLength: parseInt(required("GROUP_ROOM_CODE_LENGTH", "8")),
+    groupRoomPasswordLength:parseInt(required("GROUP_ROOM_PASSWORD_LENGTH", "8")),
+  },
+
   bcrypt: {
     bcryptRound: parseInt(required("BCRYPT_ROUND", "8")),
+  },
+
+  mediasoup: {
+    workerMax: parseInt(required("MEDIASOUP_WORKER_MAX", "1")),
+    listenIp: required("MEDIASOUP_LISTEN_IP", "127.0.0.1"),
+    announcedAddress: optional("MEDIASOUP_ANNOUNCED_ADDRESS"),
+    enableUdp: MEDIASOUP_ENABLE_UDP,
+    enableTcp: MEDIASOUP_ENABLE_TCP,
+    initialOutgoingBitrate: parseInt(required("MEDIASOUP_INITIAL_OUTGOING_BITRATE", "1000000")),
+    enableSctp: MEDIASOUP_ENABLE_SCTP,
   }
 
 }

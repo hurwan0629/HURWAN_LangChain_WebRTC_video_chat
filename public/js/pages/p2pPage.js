@@ -1,6 +1,7 @@
 // 페이지 url: /p2p.html?requestId=ABC123&role=[caller | callee]
 
 import { loadMe } from "../authClient.js"
+import { createP2PMediaPipeSession } from "../mediaPipeClient.js"
 
 const params = new URLSearchParams(window.location.search)
 
@@ -16,11 +17,15 @@ const localVideo = document.getElementById("local-video")
 const remoteVideo = document.getElementById("remote-video")
 const remoteUserNickname = document.getElementById("remote-nickname")
 const localUSerNickname = document.getElementById("local-nickname")
+const mediaPipeToggle = document.getElementById("mediapipe-toggle")
 
 
 // RTCPeerConnection용 인자들
 let localStream = null
+let sendingStream = null
 let remoteStream = null
+let localVideoSender = null
+let mediaPipeSession = null
 
 const rtcConfig = {
   iceServers: [
@@ -30,6 +35,19 @@ const rtcConfig = {
 
 
 init()
+
+// P2P MediaPipe toggle: local preview and outgoing video track only.
+mediaPipeToggle?.addEventListener("change", async () => {
+  try {
+    await setMediaPipeEnabled(mediaPipeToggle.checked)
+  }
+  catch(error) {
+    console.error(error)
+    alert("MediaPipe 적용에 실패했습니다. 원본 카메라로 되돌립니다.")
+    mediaPipeToggle.checked = false
+    await setMediaPipeEnabled(false)
+  }
+})
 
 // 흐름 정리해보기
 
@@ -168,6 +186,43 @@ async function connectToP2PRoom(socket) {
  * 주소 후보 자동 등록 및 서버에 요청 해주는 RTCPeerConnection객체 반환
  * 이때 [p2p:(on)offer(ed)]과 [p2p:(on)answer(ed)]은 caller/callee 가 각각 알아서 걸어주어야함
  */
+// P2P MediaPipe toggle: keeps original localStream and swaps only the outgoing video track.
+async function setMediaPipeEnabled(enabled) {
+  if(!localStream) {
+    return
+  }
+
+  if(enabled) {
+    if(mediaPipeSession) {
+      return
+    }
+
+    mediaPipeSession = await createP2PMediaPipeSession(localStream)
+    sendingStream = mediaPipeSession.stream
+    localVideo.srcObject = sendingStream
+    await replaceOutgoingVideoTrack(mediaPipeSession.videoTrack)
+    return
+  }
+
+  const originalVideoTrack = localStream.getVideoTracks()[0]
+  sendingStream = localStream
+  localVideo.srcObject = localStream
+  await replaceOutgoingVideoTrack(originalVideoTrack)
+
+  if(mediaPipeSession) {
+    mediaPipeSession.stop()
+    mediaPipeSession = null
+  }
+}
+
+async function replaceOutgoingVideoTrack(videoTrack) {
+  if(!localVideoSender || !videoTrack) {
+    return
+  }
+
+  await localVideoSender.replaceTrack(videoTrack)
+}
+
 async function prepareRTCPeerConnection(socket) {
   // alert("before getUserMedia")
   localStream = await navigator.mediaDevices.getUserMedia({
@@ -175,8 +230,13 @@ async function prepareRTCPeerConnection(socket) {
      audio: true })
   // alert("after getUserMedia")
 
-  localVideo.srcObject = localStream
+  sendingStream = localStream
+  localVideo.srcObject = sendingStream
   localVideo.muted = true
+
+  if(mediaPipeToggle?.checked) {
+    await setMediaPipeEnabled(true)
+  }
 
   remoteStream = new MediaStream()
   
@@ -196,8 +256,11 @@ async function prepareRTCPeerConnection(socket) {
     console.log("ontrack", event.track.kind, event.streams)
   }
 
-  localStream.getTracks().forEach((track) => {
-    peerConnection.addTrack(track, localStream)
+  sendingStream.getTracks().forEach((track) => {
+    const sender = peerConnection.addTrack(track, sendingStream)
+    if(track.kind === "video") {
+      localVideoSender = sender
+    }
   })
 
   // 연결되기 전부터 일단 외부 track 들어오는 것에 대해서 event.stream은 보통 

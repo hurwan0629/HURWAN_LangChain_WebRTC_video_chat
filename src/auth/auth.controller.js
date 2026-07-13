@@ -150,3 +150,28 @@ export async function handleRefreshTokenRequest(req, res, next) {
     return res.status(401).json({ message: "Invalid or Expired requestToken"})
   }
 }
+
+// [2026-07-12 20:13:43] 
+// 그냥 비어있는 accessToken, refreshToken 보내버리기
+export function logout(req, res, next) {
+  // 사용자에게 토큰 (쿠키)를 주며 페이지로 리다이렉트 시켜주기
+  res.cookie("accessToken", "", {
+    path: "/",
+    httpOnly: config.jwt.httponly,
+    sameSite: config.jwt.sameSite,
+    secure: config.jwt.secure, 
+    maxAge: 0
+  })
+
+  res.cookie("refreshToken", "", {
+    path: "/auth/refresh", // refreshToken 노출 최소화
+    httpOnly: config.jwt.httponly,
+    sameSite: config.jwt.sameSite,
+    secure: config.jwt.secure, 
+    maxAge: 0
+  })
+  
+  res.status(200).json({ 
+    ok: true,
+  })
+}

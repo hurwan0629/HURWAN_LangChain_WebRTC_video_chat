@@ -46,6 +46,11 @@ export async function exchangeGoogleCodeForToken(code) {
       grant_type: "authorization_code"
     })
   })
+
+  logger("auth/auth.service.js exchangeGoogleCodeForToken",
+    `redirect_url: ${config.google.callbackUrl}`
+  )
+
   const tokenData = await tokenResponse.json()
 
   // 요청 자체가 실패했을 때 (네트워크 등)

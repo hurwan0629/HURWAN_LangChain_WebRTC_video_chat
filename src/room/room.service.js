@@ -184,3 +184,21 @@ export async function checkRoomAndPasswordInput({ roomCode, passwordInput, userI
 export async function consumeProducerById({ roomCode, userId, producerId, rtpCapabilities }) {
   return await GroupRoomManager.consumeProducerById({ roomCode, userId, producerId, rtpCapabilities });
 }
+
+// [2026-07-12 19:33:51]
+// 사용자가 명시적으로 group:leave하는 경우에 사용됨
+// disconnect 되는 경우에 쓰일수도 있음
+export function removeUser({ roomCode, userId }) {
+  const removeResult =  GroupRoomManager.removeUser({ roomCode, userId })
+  const closeResult = GroupRoomManager.closeUser({ roomCode, userId })
+  return removeResult && closeResult
+}
+
+export function closeRoom({ roomCode }) {
+  return GroupRoomManager.closeRoom({ roomCode })
+}
+
+// [2026-07-12 20:37:56] 있던거 재사용
+export function checkIsHost({ roomCode, userId }) {
+  return GroupRoomManager.checkIsHost({ roomCode, userId })
+}

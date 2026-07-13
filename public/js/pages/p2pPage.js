@@ -11,7 +11,7 @@ const requestId = params.get("requestId")
 let plainPassword;
 
 // document의 요소들 가져오는 부분
-const showPasswordButton = document.getElementById("show-room-password")
+const passwordDiv = document.getElementById("show-room-password")
 const localVideo = document.getElementById("local-video")
 const remoteVideo = document.getElementById("remote-video")
 const remoteUserNickname = document.getElementById("remote-nickname")
@@ -39,6 +39,11 @@ async function init() {
   
 
   const user = await loadMe()
+
+  if(!user) {
+    alert("로그인이 필요한 페이지입니다.")
+    window.location.href = "/index.html"
+  }
   
   const socket = io({
     withCredentials: true, // 연결 시 accessToken 필요 (모든 소켓 통신은 accessTokenCheck 소켓 미들웨어를 통함)
@@ -65,12 +70,10 @@ async function connectToP2PRoom(socket) {
   if(passwordResult.ok) {
     localUSerNickname.innerText = passwordResult.nickname
     plainPassword = passwordResult.password
-    alert(`해당 방의 비밀번호는 [${passwordResult.password}] 입니다.`)
+    // alert(`해당 방의 비밀번호는 [${passwordResult.password}] 입니다.`)
 
-    showPasswordButton.hidden = false
-    showPasswordButton.onclick = () => {
-      alert(`방의 코드: ${requestId} | 비밀번호: ${passwordResult.password}`)
-    }
+    console.log(`(호스트) 방의 코드: [${requestId}] | 비밀번호: [${passwordResult.password}]`)
+    passwordDiv.innerText += `(호스트) 방의 코드: [${requestId}] | 비밀번호: [${passwordResult.password}]`
 
     // 미리 connection 준비 등록시켜놓고 바로 socket.on("p2p:callee-ready") 등록을 위해 
     // await는 .on() 안에서 걸어주기
@@ -82,7 +85,10 @@ async function connectToP2PRoom(socket) {
       const callerPeerConnection = await callerPeerConnectionAsync
       // media 준비 후 offer 시작
       const offer = await callerPeerConnection.createOffer()
+      // alert("offer created")
+      
       await callerPeerConnection.setLocalDescription(offer)
+      alert("local description set")
 
       socket.emit("p2p:offer", { requestId, offer })
     })
@@ -117,7 +123,7 @@ async function connectToP2PRoom(socket) {
       const calleeNicknameResult = await socket.emitWithAck("p2p:callee-nickname", { requestId, nickname })
       if(calleeNicknameResult.ok) {
         localUSerNickname.innerText = calleeNicknameResult.nickname
-        alert(`닉네임 설정 성공! [${calleeNicknameResult.nickname}]`)
+        // alert(`닉네임 설정 성공! [${calleeNicknameResult.nickname}]`)
       }
       
 
@@ -126,6 +132,8 @@ async function connectToP2PRoom(socket) {
       socket.on("p2p:offer", async ({ offer }) => {
         const calleePeerConnection = await calleePeerConnectionAsync
         
+
+
         await calleePeerConnection.setRemoteDescription(
           new RTCSessionDescription(offer)
         )
@@ -161,10 +169,11 @@ async function connectToP2PRoom(socket) {
  * 이때 [p2p:(on)offer(ed)]과 [p2p:(on)answer(ed)]은 caller/callee 가 각각 알아서 걸어주어야함
  */
 async function prepareRTCPeerConnection(socket) {
+  // alert("before getUserMedia")
   localStream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  })
+     video: true, 
+     audio: true })
+  // alert("after getUserMedia")
 
   localVideo.srcObject = localStream
   localVideo.muted = true
@@ -174,6 +183,18 @@ async function prepareRTCPeerConnection(socket) {
   remoteVideo.srcObject = remoteStream
 
   const peerConnection = new RTCPeerConnection(rtcConfig)
+
+  peerConnection.oniceconnectionstatechange = () => {
+    console.log("iceConnectionState", peerConnection.iceConnectionState)
+  }
+
+  peerConnection.onconnectionstatechange = () => {
+    console.log("connectionState", peerConnection.connectionState)
+  }
+
+  peerConnection.ontrack = (event) => {
+    console.log("ontrack", event.track.kind, event.streams)
+  }
 
   localStream.getTracks().forEach((track) => {
     peerConnection.addTrack(track, localStream)

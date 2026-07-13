@@ -2,7 +2,7 @@
 
 import { Router } from "express"
 
-import { startGoogleLogin, handleGoogleCallback, provideMe, handleRefreshTokenRequest } from "./auth.controller.js"
+import { startGoogleLogin, handleGoogleCallback, provideMe, handleRefreshTokenRequest, logout } from "./auth.controller.js"
 import { checkAccessToken } from "./auth.middleware.js"
 import config from "../config/env.js"
 
@@ -18,5 +18,8 @@ router.get("/google/callback", handleGoogleCallback)
 router.get("/me", checkAccessToken, provideMe)
 
 router.post("/refresh", handleRefreshTokenRequest)
+
+// [2026-07-12 20:12:54] 이제야 로그아웃 간단히 구현
+router.post("/logout", logout)
 
 export default router

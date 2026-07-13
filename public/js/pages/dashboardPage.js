@@ -2,6 +2,7 @@ console.log("[loaded] dashboardPage.js")
 
 // 대시보드에서 반드시 작업 해주는 스크립트 작업해주기
 import { loadMe } from "/js/authClient.js"
+import { apiFetch } from "../api/apiFetch.js"
 
 // 미리 dashboard.html의 요소를 가져와놓기
 const title = document.getElementById("title")
@@ -16,6 +17,7 @@ const createPrivateButton = document.getElementById("create-private")
 const joinPrivateButton = document.getElementById("join-private")
 const createGroupButton = document.getElementById("create-group")
 const joinGroupButton = document.getElementById("join-group")
+const logoutButton = document.getElementById("logout")
 
 // 모든 작업 수행해주기
 init()
@@ -23,6 +25,10 @@ init()
 // 빠르게 흐름 파악하기 쉽게 만든 함수.
 async function init() {
   const user = await loadMe()
+  if(!user) {
+    alert("로그인이 필요한 페이지입니다.")
+    window.location.href = "/index.html"
+  }
 
   // 상태 가져왔으면 user-info 채워주기
   title.innerText = `어서오세요! ${user?.name}님!`
@@ -87,6 +93,14 @@ async function init() {
     console.log("joinGroupButton clicked")
     const roomCode = prompt("참여할 그룹 방의 코드를 입력해주세요")
     window.location.href = `/room.html?roomCode=${roomCode}`
+  }
+
+  logoutButton.onclick = async () => {
+    await apiFetch("/auth/logout", {
+      method: "POST"
+    })
+
+    window.location.href = "/index.html"
   }
 }
 

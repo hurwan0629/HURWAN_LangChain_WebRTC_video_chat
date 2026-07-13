@@ -12,27 +12,58 @@ let roomPlainPasword;
 
 
 // 스크립트에서 사용할 DOM 요소
-const showPasswordButton = document.getElementById("show-room-password")
+const passwordDiv = document.getElementById("show-room-password")
 const remoteContainer = document.getElementById("remote-container")
 const localVideo = document.getElementById("local-video")
+const groupLeaveButton = document.getElementById("group-leave")
 
 init()
 
 
 async function init() {
-  await loadMe()
+  const user = await loadMe()
+
+  if(!user) {
+    alert("로그인이 필요한 페이지입니다.")
+    window.location.href = "/index.html"
+  }
 
   const socket = io({
     withCredentials: true,
   })
+
+  // [2026-07-12 20:00:23] 
+  // 어짜피 해당 이벤트는 만들기 위해서 recvTransport같은 다른 객체 준비가 
+  // 필요 없기 때문에 그냥 바로 등록해주기
+  socket.on("group:peer-left", ({ userId }) => {
+    document
+      .querySelectorAll(`[data-producer-user-id="${userId}"]`)
+      .forEach((video) => video.closest(".remote-user-container")?.remove())
+  })
+
+  // [2026-07-12 20:38:27]
+  // 서버에서 group:leave - isHost 분기 추가 후 생성
+  socket.on("group:room-closed", () => {
+    alert("방장이 나가 회의가 종료되었습니다.")
+    
+    // [2026-07-12 20:43:53] 원래 타임아웃 없었는데 너무 빨리 나가지는 경우 있어서 잠깐 지연줌
+    setTimeout(() => {
+      window.location.href = "/dashboard.html"
+    }, 500)
+  })
+
+  groupLeaveButton.onclick = async () => {
+    await socket.emitWithAck("group:leave", { roomCode })
+    window.location.href = "/dashboard.html"
+  }
+
+
   // 내가 호스트인지 확인하기
   const hostInfo = await socket.emitWithAck("group:host-ready", { roomCode })
   if(hostInfo.ok) {
     roomPlainPasword = hostInfo.plainPassword
-    showPasswordButton.hidden = false
-    showPasswordButton.onclick = () => {
-      alert(`(호스트) 방의 코드: [${roomCode}] | 비밀번호: [${roomPlainPasword}]`)  
-    }
+    console.log(`(호스트) 방의 코드: [${roomCode}] | 비밀번호: [${roomPlainPasword}]`)
+    passwordDiv.innerText += `(호스트) 방의 코드: [${roomCode}] | 비밀번호: [${roomPlainPasword}]`
     // alert(`(호스트) 방의 코드: [${roomCode}] | 비밀번호: [${roomPlainPasword}]`)
 
     await hostBranch(socket)
@@ -55,23 +86,34 @@ async function candidateBranch(socket) {
   const joinResult = await socket.emitWithAck("group:join", {
     roomCode, passwordInput, nickname
   })
-  console.log("if(joinResult.ok) {")
+  // console.log("if(joinResult.ok) {")
   if(joinResult.ok) {
     alert("방 참여 성공!")
   }
   else {
     alert("방 참여 실패....")
+    window.location.href="/dashboard.html"
   }
 
-  await readyDevice(socket)
+  try{
+    alert(1)
+    await readyDevice(socket)
+  }
+  catch( error ) {
+    alert(error.message)
+  }
 }
 
 async function readyDevice(socket, device=localDevice) {
   if(!socket?.connected) {
     throw Error("[readyDevice] socket not connected")
   }
+
+  alert(`2 socket.connected=${socket.connected}, id=${socket.id}`)
+
   const rtpCapabilitiesResult = await socket.emitWithAck("group:get-router-rtp-capabilities", { roomCode })
 
+  alert(3)
   if(!rtpCapabilitiesResult.ok) {
     alert("존재하지 않는 방입니다.")
     window.location.href="dashboard.html"
@@ -81,6 +123,8 @@ async function readyDevice(socket, device=localDevice) {
       routerRtpCapabilities: rtpCapabilitiesResult.rtpCapabilities 
     })
   }
+  
+  alert("미디어 준비 시작")
 
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,

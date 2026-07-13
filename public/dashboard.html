@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- <link rel="stylesheet" href="/gpt-css/common.css"> -->
   <title>대기화면</title>
 </head>
 <body>
@@ -10,9 +11,9 @@
     <div id="logo-box">
       <img id="logo" src="/images/logo.png" alt="logo" style="width: 250px"/>
     </div>
-    <button onclick="">내 미디어 확인하기</button>
+    <button onclick="">내 미디어 확인하기<br>[작업전]</button>
     <div class="alarm">
-      <button onclick="">알람</button>
+      <button onclick="">알람<br>[작업전]</button>
       <h4></h4>
       <ul id="alarm-log">
         <!-- 개발 로깅용 공간 -->
@@ -31,10 +32,12 @@
 
   <div class="main-container">
     <div class="private-box">
+      <h2>[P2P] RTCPeerConnection</h2>
       <button id="create-private">개인 통화방 생성하기</button>
       <button id="join-private">개인 통화방 참여하기</button>
     </div>
     <div class="group-box">
+      <h2>[Group] mediasoup</h2>
       <button id="create-group">그룹 통화방 생성하기</button>
       <button id="join-group">그룹 통화방 참여하기</button>
     </div>

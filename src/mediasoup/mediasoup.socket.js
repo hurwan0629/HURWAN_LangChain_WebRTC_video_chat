@@ -49,6 +49,7 @@ export function registerMediasoupSocket(io, socket) {
         return 
       }
       socket.join(roomCode)
+      socket.data.groupRoomCode = roomCode
       
       // 호스트면 plainPassword 보내주기
       callback({
@@ -68,6 +69,9 @@ export function registerMediasoupSocket(io, socket) {
   // 4. 미디어 트랙 준비해두고 서버와 맞는지 확인하기
   socket.on("group:get-router-rtp-capabilities", ({ roomCode }, callback) => {
     try {
+      logger("/mediasoup/mediasoup.socket.js group:get-router-rtp-capabilities",
+        `socketId: ${socket.id}, roomCode: ${roomCode}`
+      )
 
       // [2026-07-12 12:21:16] roomCode로부터 rtpCapabilities 반환해주기
       const rtpCapabilities = GroupRoomService.getRtpCapabilitiesByRoomCode({ roomCode })
@@ -288,6 +292,7 @@ export function registerMediasoupSocket(io, socket) {
 
       if(result) {
         socket.join(roomCode)
+        socket.data.groupRoomCode = roomCode
         callback({
           ok: true
         })
@@ -338,5 +343,83 @@ export function registerMediasoupSocket(io, socket) {
   
 
   // 8. socket.disconnect 와 group:leave를 나눠서 disconnect 할 시에는 N초 타임아웃 걸어주기
-  // 9. 방장이 group:leave 하거나 타임아웃 되면 방 삭제 및 정리하기
+  // [2026-07-12 19:28:12]
+  socket.on("group:leave", ({ roomCode }, callback) => {
+    try {
+      const userId = socket.data.user.id
+
+      // [2026-07-12 20:35:09] 함수 완성 후 방장 나감 -> 방 삭제 기능 추가하려고 돌아옴
+      const isHost = GroupRoomService.checkIsHost({ roomCode, userId })
+
+      if(isHost) {
+        const closeResult = GroupRoomService.closeRoom({ roomCode })
+
+        if(!closeResult) {
+          callback({
+            ok: false
+          })
+          return
+        }
+
+        // 그냥 끝내버리기
+        io.to(roomCode).emit("group:room-closed")
+        callback({
+          ok: true,
+        })
+        return 
+      }
+
+
+      // 해당 사용자에 대한 transport/producer/consumer 모두 삭제하고 
+      const removeResult = GroupRoomService.removeUser({ roomCode, userId })
+      // 해당 사용자가 떠났음을 해당 방에 공지해주기 (emit("group:peer-left"))
+      if(!removeResult) {
+        callback({ ok: false })
+        return
+      }
+
+      // 내보내주기
+      socket.leave(roomCode)
+
+      socket.to(roomCode).emit("group:peer-left", {
+        userId
+      })
+
+      callback({ ok: true })
+    } catch (error) {
+      console.log(error)
+      callback({ 
+        ok: false,
+        message: error.message
+      })
+    }
+  })
+
+  // 나가는 경우 이벤트 추가해주기
+  socket.on("disconnect", () => {
+    const roomCode = socket.data.groupRoomCode
+    if (!roomCode) return
+
+    const userId = socket.data.user.id
+
+    // [2026-07-12 20:40:35] 여기도 diconnect 작성 후 group:leave 에 isHost 분기 추가 후
+    // 작업 생성
+    const isHost = GroupRoomService.checkIsHost({ roomCode, userId })
+
+    if (isHost) {
+      const closeResult = GroupRoomService.closeRoom({ roomCode })
+
+      if (closeResult) {
+        socket.to(roomCode).emit("group:room-closed")
+      }
+      return
+    }
+
+    // 방장 아니면 그냥 메모리/연결만 정리해주기
+    const result = GroupRoomService.removeUser({ roomCode, userId })
+
+    if (result) {
+      socket.to(roomCode).emit("group:peer-left", { userId })
+    }
+  })
 }

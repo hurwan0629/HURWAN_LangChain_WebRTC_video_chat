@@ -529,3 +529,144 @@ function findProducerById({ room, producerId }) {
   // 없으면 null 반환
   return null;
 }
+
+// [2026-07-12 19:41:46]
+export function removeUser({ roomCode, userId }) {
+  let room
+  let leavingPeer
+  try {
+    room = rooms.get(roomCode)
+
+    if(!room){
+      return false
+    }
+    
+    leavingPeer = room.peers.get(userId)
+
+    if (!leavingPeer) {
+      return false
+    }
+
+    // 해당 사용자의 producerId 뽑아주기
+    const videoProducerId = leavingPeer.producers.video?.id
+    const audioProducerId = leavingPeer.producers.audio?.id
+    const screenProducerId = leavingPeer.producers.screen?.id
+
+    const leavingProducerIds = new Set([
+      videoProducerId,
+      audioProducerId,
+      screenProducerId
+    ].filter(Boolean))
+
+    // 모든 사용자 순회하며 consumer.producerId가 맞는것을 순회
+    for(const [peerId, peer] of room.peers) {
+      if(peerId === userId) {
+        continue
+      }
+
+      for (const [consumerId, consumer] of peer.consumers) {
+        if (leavingProducerIds.has(consumer.producerId)) {
+          consumer.close();
+          peer.consumers.delete(consumerId)
+        }
+      }
+    }
+    return true
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
+
+// [2026-07-12 19:46:00]
+// 위에 removeUser을 통해 userId 제외한 모든 곳 정리해주고
+// 이번에는 사용자의 메모리 정리해주기
+export function closeUser({ roomCode, userId }) {
+  let room
+  let peer
+
+  try {
+    room = rooms.get(roomCode)
+    if(!room) {
+      return false
+    }
+    // 사용자 가져오기
+    peer = room.peers.get(userId)
+
+    if (!peer) {
+      return false
+    }
+    // 안에있는 모든 연결들 정리하기
+    // consumer
+    for (const consumer of peer.consumers.values()) {
+      consumer.close()
+    }
+    peer.consumers.clear() // Map 정리
+    // producer
+    for (const producer of Object.values(peer.producers)) {
+      producer?.close()
+    }
+    // 닫힌 producers 없애주기 (지우기)
+    peer.producers.video = null
+    peer.producers.audio = null
+    peer.producers.screen = null
+    
+    // sendTransport
+    peer.sendTransport?.close()
+    // recvTransport
+    peer.recvTransport?.close()
+
+    // 최종적으로 영원히 삭제해주기
+    room.peers.delete(userId)
+
+    return true
+  } catch(error) {
+    console.log(error)
+    return false
+  }
+}
+
+// [2026-07-12 20:30:14]
+// 방장이 나가는 경우에 방을 아예 완전히 없애버리는 함수
+export function closeRoom({ roomCode }) {
+  try {
+    const room = rooms.get(roomCode)
+    if (!room) {
+      return false
+    }
+  
+    // 모든 사용자에 대해서 순회하면서 그냥 닥치는데로 닫아주기
+    for (const [userId, peer] of room.peers) {
+      // consumer
+      for (const consumer of peer.consumers.values()) {
+        consumer.close()
+      }
+      peer.consumers.clear()
+  
+      // producer
+      for (const producer of Object.values(peer.producers ?? {})) {
+        producer?.close()
+      }
+  
+      // sendTransport
+      peer.sendTransport?.close()
+      // recvTransport
+      peer.recvTransport?.close()
+    }
+  
+    // [2026-07-12 20:31:31] 기준 구현하진 않았지만
+    // 방장이 나갔을 때 타임아웃 걸거고
+    // 이후 업데이트 하게 된다면 일반 사용자에게도 할 여지가 있음
+    for (const timerId of room.graceTimers.values()) {
+      clearTimeout(timerId)
+    }
+  
+    // 라우터 닫고 아예 메모리에서 삭제해주기
+    room.router?.close()
+    rooms.delete(roomCode)
+  
+    return true
+  } catch(error) {
+    console.log(error)
+  }
+}

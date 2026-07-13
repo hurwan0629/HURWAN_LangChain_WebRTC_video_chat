@@ -123,6 +123,15 @@ export function registerP2PSocket(io, socket) {
     const calleeNicknameResult = P2PManager.setCalleeNickname(requestId, userId, nickname)
 
     if(calleeNicknameResult) {
+      // host nickname
+      const hostNickname = P2PManager.getHostNickname(requestId)
+
+      socket.emit("p2p:wait-offer", {
+        requestId,
+        caller: {
+           nickname: hostNickname// callee 자신에게 보내는 이벤트
+        }
+      })
 
       // callee의 nickname이 설정되는 시점에 연결 작업이 완료된다 판단
       // 양쪽 socket.id에 caller:"p2p:callee-ready"와 callee:"p2p:wait-offer" 작업을 실행
@@ -134,15 +143,6 @@ export function registerP2PSocket(io, socket) {
         }
       })
 
-      // host nickname
-      const hostNickname = P2PManager.getHostNickname(requestId)
-
-      socket.emit("p2p:wait-offer", {
-        requestId,
-        caller: {
-           nickname: hostNickname// callee 자신에게 보내는 이벤트
-        }
-      })
       
       callback({
         ok: true,
@@ -160,6 +160,7 @@ export function registerP2PSocket(io, socket) {
   // // // // // // // // [signalling 작업 (ice-candidate 작업)] // // // // // // // //
   // 1. 한쪽에서 먼저 offer 요청하기
   socket.on("p2p:offer", ({requestId, offer}) => {
+    logger("/p2p p2p:offer", `from=${socket.id}, to=${P2PManager.getOtherPeer(socket.id, requestId)}, requestId=${requestId}, hasOffer=${!!offer}`)
     // 자신이 아닌 socketId(userId)로 emit("p2p:offer" , offer) 보내기
     io.to(P2PManager.getOtherPeer(socket.id, requestId))
           .emit("p2p:offer", { offer })

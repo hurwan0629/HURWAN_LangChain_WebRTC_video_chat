@@ -32,6 +32,8 @@ function optional(key) {
   return value
 }
 
+const port = required("PORT", DEFAULT_PORT)
+const clientOrigin = required("CLIENT_ORIGIN", `http://localhost:${port}`)
 const sameSiteValue = required("JWT_SAME_SITE", "lax");
 const sameSite = ["none", "lax", "strict"].includes(sameSiteValue)
   ? sameSiteValue
@@ -44,16 +46,16 @@ const MEDIASOUP_ENABLE_SCTP = required("MEDIASOUP_ENABLE_SCTP", "false") !== "tr
 const config = {
   host: {
     publicPath: required("PUBLIC_PATH", __publicpath),
-    port: parseInt(required("PORT", "8080")),
+    port: parseInt(port),
     ip: required("HOST_IP", "localhost"),
-    clientOrigin: required("CLIENT_ORIGIN", `http://localhost:${required("PORT", DEFAULT_PORT)}`),
+    clientOrigin,
     credentialAllow: true
   },
 
   google: {
     clientId: required("GOOGLE_CLIENT_ID"),
     clientSecret: required("GOOGLE_CLIENT_SECRET"),
-    callbackUrl: `http://localhost:${required("PORT", DEFAULT_PORT)}` + required("GOOGLE_CALLBACK_URL_PATH")
+    callbackUrl: clientOrigin + required("GOOGLE_CALLBACK_URL_PATH")
   },
   
   db: {

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WebRTC 프로젝트 발표자료</title>
+  <style>
+    :root{
+      --line:#d8e2ef; --line2:#c7d5e8; --text:#17212f; --muted:#607186;
+      --blue:#1d56d9; --blue-soft:#edf3ff; --teal:#118d90; --teal-soft:#eaf9f8;
+      --purple:#6e47f0; --purple-soft:#f2eeff; --green:#198754; --green-soft:#edf9f2;
+      --orange:#da7a16; --orange-soft:#fff3e7; --bg:#fbfdff; --shadow:0 10px 28px rgba(18,38,63,.07);
+      --sans: Inter, Pretendard, "Noto Sans KR", system-ui, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    *{box-sizing:border-box} html,body{height:100%;margin:0} body{font-family:var(--sans);background:#fff;color:var(--text);overflow:hidden}
+    .deck{width:100vw;height:100vh;position:relative;overflow:hidden;background:#fff}
+    .slide{position:absolute;inset:0;display:none;padding:34px 52px 48px;background:radial-gradient(circle at 0% 0%, rgba(29,86,217,.05), transparent 22%), linear-gradient(180deg,#fff,#fbfdff);overflow:hidden}
+    .slide.active{display:block}
+    .topbar{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:14px}
+    .eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--blue);font-size:13px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .eyebrow::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 6px rgba(29,86,217,.12)}
+    .page{color:#93a0b0;font-size:13px;font-weight:800;letter-spacing:.08em}
+    h1,h2,h3,p{margin:0} h1{font-size:58px;line-height:1.06;letter-spacing:-.05em} h2{font-size:36px;line-height:1.12;letter-spacing:-.04em} h3{font-size:23px;line-height:1.2;letter-spacing:-.02em}
+    p,li{font-size:16px;line-height:1.55} .subtitle{color:var(--muted);font-size:18px;line-height:1.45;margin-top:8px}
+    .muted{color:var(--muted)} .tiny{font-size:12px;color:var(--muted)} code{font-family:var(--mono);font-size:.95em;padding:.1em .35em;border-radius:8px;background:var(--blue-soft);color:var(--blue)}
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px} .chip{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;box-shadow:0 8px 18px rgba(18,38,63,.04)}
+    .accent-blue{background:var(--blue-soft);color:var(--blue)} .accent-teal{background:var(--teal-soft);color:var(--teal)} .accent-purple{background:var(--purple-soft);color:var(--purple)} .accent-green{background:var(--green-soft);color:var(--green)} .accent-orange{background:var(--orange-soft);color:var(--orange)}
+    .card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 20px;box-shadow:var(--shadow)} .soft{background:#f7faff}
+    .hero{display:grid;grid-template-columns:.92fr 1.08fr;gap:22px;height:calc(100% - 70px);align-items:stretch}
+    .hero .left{display:flex;flex-direction:column;justify-content:center;gap:18px}
+    .image-frame{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;display:grid;place-items:center;min-height:0}
+    .image-frame img{width:100%;height:100%;object-fit:contain;display:block}
+    .placeholder{padding:24px;text-align:center;color:var(--muted)} .placeholder b{display:block;font-size:22px;color:var(--text);margin-bottom:8px}
+    .timeline-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;height:calc(100% - 110px);margin-top:18px}
+    .tcol{background:#fff;border:1px solid var(--line);border-radius:26px;padding:18px 20px;box-shadow:var(--shadow);overflow:hidden}
+    .tcol h3{font-size:24px;margin-bottom:12px}
+    .vline{position:relative;padding-left:28px;display:flex;flex-direction:column;gap:16px}
+    .vline::before{content:"";position:absolute;left:8px;top:8px;bottom:8px;width:4px;background:#dfe8f6;border-radius:999px}
+    .vitem{position:relative;padding:10px 14px 12px 18px;border:1px solid var(--line);border-radius:20px;background:#fbfdff}
+    .vitem::before{content:"";position:absolute;left:-24px;top:18px;width:16px;height:16px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 6px rgba(29,86,217,.12)}
+    .vitem.purple::before{background:var(--purple);box-shadow:0 0 0 6px rgba(110,71,240,.12)} .vitem.teal::before{background:var(--teal);box-shadow:0 0 0 6px rgba(17,141,144,.12)}
+    .day{font-size:20px;font-weight:900;color:var(--blue)} .slot{font-size:12px;font-weight:900;color:var(--muted);margin-top:4px} .work{margin-top:6px;font-size:14px;line-height:1.48}
+    .design-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;height:calc(100% - 118px);margin-top:18px;align-content:start}
+    details.box{border:1px solid var(--line);border-radius:24px;background:#fff;box-shadow:var(--shadow);overflow:hidden} details.box[open]{border-color:#cbdcf8} details.box summary{list-style:none;cursor:pointer;padding:18px;font-size:24px;font-weight:900;position:relative} details.box summary::-webkit-details-marker{display:none} details.box summary::after{content:'＋';position:absolute;right:18px;top:12px;color:var(--blue);font-size:28px} details.box[open] summary::after{content:'－'} .box-body{padding:0 18px 18px;color:var(--muted)} .box-body ul{margin:8px 0 0 18px;padding:0}
+    .full-img{height:calc(100% - 112px);margin-top:16px}
+    .structure{display:grid;grid-template-columns:1.16fr .84fr;gap:22px;height:calc(100% - 116px);margin-top:16px}
+    .tree-board{border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:var(--shadow);padding:20px;overflow:auto}
+    .tree{font-family:var(--mono);font-size:15px;line-height:1.85;white-space:pre-wrap}
+    .filetag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-family:var(--sans);font-weight:900;vertical-align:middle;margin-right:8px}
+    .app{background:var(--blue-soft);color:var(--blue)} .sock{background:var(--purple-soft);color:var(--purple)} .infra{background:var(--teal-soft);color:var(--teal)}
+    .role-board{display:grid;grid-template-rows:auto auto 1fr;gap:14px}
+    .table{display:grid;grid-template-columns:.8fr 1.2fr 1.1fr;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff;box-shadow:var(--shadow)} .table div{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);font-size:14px}.table div:nth-child(3n){border-right:none}.table .head{font-weight:900;color:var(--blue);background:#f7faff}
+    .env-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;height:calc(100% - 116px);margin-top:18px} .env-card{border:1px solid var(--line);border-radius:24px;padding:18px;background:#fff;box-shadow:var(--shadow)} .env-card h3{margin-bottom:10px;color:var(--blue)} .env-card ul{margin:0;padding-left:18px}.env-card li{margin:6px 0}
+    .flow-board{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:calc(100% - 118px);margin-top:18px}.flow-panel{border:1px solid var(--line);border-radius:24px;background:#fff;padding:18px;box-shadow:var(--shadow)} .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}.step{border:1px solid var(--line);border-radius:18px;padding:12px;background:#fbfdff;min-height:94px;position:relative}.step .n{position:absolute;right:10px;top:10px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--blue-soft);color:var(--blue);font-weight:900;font-size:12px}.step b{display:block;font-size:20px;margin-bottom:6px}
+    .state-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;height:calc(100% - 118px);margin-top:18px}.state-card{border:1px solid var(--line);border-radius:24px;background:#fff;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}.state-file{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:900;color:var(--purple)} .state-file .label{color:var(--muted)} .state-file code{background:var(--purple-soft);color:var(--purple)} .codeblock{font-family:var(--mono);font-size:12.8px;line-height:1.55;background:#0f172a;color:#d7e3f3;border-radius:18px;padding:14px;border:1px solid #26344d;white-space:pre-wrap;overflow:auto}
+    .media-internals{display:grid;grid-template-columns:1.06fr .94fr;gap:22px;height:calc(100% - 116px);margin-top:18px}.stack-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.accent-card{border:2px solid;border-radius:22px;padding:16px;background:#fff;box-shadow:var(--shadow)} .b{border-color:#cfe0ff}.t{border-color:#c4efea}.p{border-color:#ddd2ff}.g{border-color:#caecd8}.o{border-color:#ffd8af}
+    .api-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;height:calc(100% - 116px);margin-top:18px}.api-left{display:grid;gap:14px;align-content:start}.api-right{display:flex;flex-direction:column;gap:12px;overflow:hidden}.api-right .scroll{overflow:auto;padding-right:4px}.api-card{border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:var(--shadow);overflow:hidden} .api-card summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:900;font-size:18px;position:relative;background:#f7faff} .api-card summary::-webkit-details-marker{display:none} .api-card summary::after{content:'＋';position:absolute;right:16px;top:9px;font-size:26px;color:var(--blue)} .api-card[open] summary::after{content:'－'} .api-body{padding:14px 16px}.kv{display:grid;grid-template-columns:160px 1fr;gap:8px 12px}.kv div{font-size:14px}.kv .k{font-weight:900;color:var(--blue)}
+    .code-layout{display:grid;grid-template-columns:1.42fr .58fr;gap:18px;height:calc(100% - 112px);margin-top:16px}.caption{border:1px solid var(--line);border-radius:24px;background:#fff;padding:18px;box-shadow:var(--shadow)} .caption .path{display:inline-flex;padding:8px 10px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-family:var(--mono);font-size:13px;margin:10px 0}.caption ul{margin:0;padding-left:18px}.caption li{margin:6px 0}
+    .two-images{display:grid;grid-template-columns:1fr 1fr;gap:18px;height:calc(100% - 112px);margin-top:16px}
+    .check-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;height:calc(100% - 116px);margin-top:18px}.check-card{border:1px solid var(--line);border-radius:24px;background:#fff;padding:18px;box-shadow:var(--shadow)} .check-card ul{list-style:none;margin:8px 0 0;padding:0}.check-card li{display:flex;gap:10px;margin:10px 0}.mark{font-weight:900}.ok{color:var(--green)}.mid{color:var(--orange)}.no{color:#6b7280}
+    .retro{display:grid;grid-template-columns:1fr 1fr;gap:22px;height:calc(100% - 116px);margin-top:18px}.quote{margin-top:14px;padding:16px 18px;border-left:6px solid var(--blue);background:#f7faff;border-radius:0 18px 18px 0;font-size:16px;line-height:1.62;color:#304259}
+    .presenter{position:fixed;left:18px;bottom:16px;z-index:20;display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow);font-size:14px;color:var(--muted)} .controls{position:fixed;right:18px;bottom:16px;z-index:20;display:flex;gap:8px}
+    button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 14px;font-weight:900;color:#213248;cursor:pointer;box-shadow:var(--shadow)}
+    @media print{body{overflow:visible}.deck{height:auto}.slide{position:relative;display:block!important;page-break-after:always;height:100vh}.controls,.presenter{display:none}}
+  </style>
+</head>
+<body>
+<main class="deck">
+
+<section class="slide active">
+  <div class="topbar"><div><div class="eyebrow">WebRTC / mediasoup Project</div><h1>Google OAuth 기반<br>P2P · 그룹 화상회의 서비스</h1><p class="subtitle">RTCPeerConnection 기반 1:1 통화와 mediasoup SFU 기반 그룹 통화를 구현한 실시간 화상회의 프로젝트</p><div class="chips"><span class="chip accent-blue">Express</span><span class="chip accent-blue">Socket.IO</span><span class="chip accent-teal">RTCPeerConnection</span><span class="chip accent-purple">mediasoup</span><span class="chip accent-green">PostgreSQL</span><span class="chip accent-orange">Docker / Nginx</span></div></div><div class="page">01 / 20</div></div>
+  <div class="hero">
+    <div class="left"><div class="card soft"><h3>주요 기능</h3><ul><li>Google OAuth 로그인</li><li>JWT 기반 인증 / 인가</li><li>1:1 P2P 통화</li><li>그룹 통화 SFU 중계</li><li>실시간 상태관리와 이벤트 처리</li></ul></div><div class="card"><h3>핵심 기술</h3><p class="muted"><code>Socket.IO</code>는 시그널링, <code>WebRTC</code>는 P2P 미디어 전송, <code>mediasoup</code>는 그룹 통화 미디어 중계에 사용했다.</p></div></div>
+    <div class="image-frame"><img data-src="assets/00-service-screen.png" alt="서비스 화면"><div class="placeholder"><b>서비스 화면 이미지</b><p><code>assets/00-service-screen.png</code> 파일을 넣으면 자동으로 표시됩니다.</p></div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Timeline</div><h2>개발 타임라인</h2><p class="subtitle">07/08 ~ 07/13</p></div><div class="page">02 / 20</div></div>
+  <div class="timeline-2col">
+    <div class="tcol"><h3>07/08 ~ 07/10</h3><div class="vline">
+      <div class="vitem"><div class="day">07/08</div><div class="slot">~ 11:00</div><div class="work">WebRTC, ICE, STUN, mediasoup 구조 조사 및 구현 방향 결정</div></div>
+      <div class="vitem purple"><div class="day">07/09</div><div class="slot">13:37 ~ 15:30</div><div class="work">Notion 설계, 상태관리 구조, DB 초안, 폴더 구조와 저장소 정리</div></div>
+      <div class="vitem teal"><div class="day">07/10</div><div class="slot">07:42 ~ 17:25</div><div class="work">Express / Socket.IO / logger / config 구성, Google OAuth 구현, PostgreSQL Docker와 <code>users</code> 테이블 연동</div></div>
+    </div></div>
+    <div class="tcol"><h3>07/11 ~ 07/13</h3><div class="vline">
+      <div class="vitem"><div class="day">07/11</div><div class="slot">08:30 ~ 23:53</div><div class="work">대시보드 / P2P 페이지, <code>onlineUsers</code> / <code>p2pRequests</code>, offer / answer / ICE 흐름 구현</div></div>
+      <div class="vitem purple"><div class="day">07/12</div><div class="slot">10:20 ~ 20:43</div><div class="work">mediasoup Worker / Router / Transport, produce / consume, 그룹 통화 입장과 종료 흐름 구현</div></div>
+      <div class="vitem teal"><div class="day">07/13</div><div class="slot">08:14 ~ 10:47</div><div class="work">오류 수정, LAN 테스트 환경 정리, UI와 발표 자료용 정리</div></div>
+    </div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Design</div><h2>초기 설계 포인트</h2><p class="subtitle">필요한 항목만 펼쳐서 볼 수 있게 구성했다.</p></div><div class="page">03 / 20</div></div>
+  <div class="design-grid">
+    <details class="box" open><summary>P2P 통화</summary><div class="box-body"><ul><li><code>RTCPeerConnection</code> 직접 사용</li><li><code>Socket.IO</code>는 시그널링 전용</li><li>offer / answer / ICE candidate 교환</li></ul></div></details>
+    <details class="box"><summary>그룹 통화</summary><div class="box-body"><ul><li>Mesh 대신 <code>mediasoup</code> SFU</li><li><code>Worker / Router / Transport</code></li><li><code>Producer / Consumer</code> 상태관리</li></ul></div></details>
+    <details class="box"><summary>인증 / 인가</summary><div class="box-body"><ul><li>Google OAuth 로그인</li><li><code>accessToken / refreshToken</code></li><li>HTTP와 Socket.IO 인증 공유</li></ul></div></details>
+    <details class="box"><summary>서버 메모리 상태</summary><div class="box-body"><ul><li><code>onlineUsers</code></li><li><code>p2pRequests</code></li><li><code>rooms</code></li></ul></div></details>
+    <details class="box"><summary>DB 설계</summary><div class="box-body"><ul><li><code>users</code> 실사용</li><li><code>rooms</code>, <code>room_participants</code>, <code>activity_logs</code> 설계/SQL 작성</li></ul></div></details>
+    <details class="box"><summary>확장 방향</summary><div class="box-body"><ul><li>Redis 기반 상태 저장</li><li>TURN 서버</li><li>예외 처리 보강</li><li>운영 환경 배포</li></ul></div></details>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Architecture</div><h2>프로젝트 전체 아키텍처</h2></div><div class="page">04 / 20</div></div>
+  <div class="image-frame full-img"><img data-src="assets/architecture.png" alt="전체 아키텍처"><div class="placeholder"><b>아키텍처 이미지</b><p><code>assets/architecture.png</code> 파일을 넣으면 표시됩니다.</p></div></div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Structure</div><h2>서버 프로젝트 구조와 역할 분리</h2></div><div class="page">05 / 20</div></div>
+  <div class="structure">
+    <div class="tree-board"><div class="tree"><span class="filetag app">APP</span>src/
+├─ <span class="filetag app">APP</span>app          → Express app 생성, static / middleware 조립
+├─ <span class="filetag app">APP</span>auth         → Google OAuth, JWT, auth route/controller/service
+├─ <span class="filetag app">APP</span>user         → users repository, 로그인 사용자 처리
+├─ <span class="filetag sock">SOCKET</span>socket       → Socket.IO 진입점, 소켓 인증 middleware
+├─ <span class="filetag sock">SOCKET</span>presence     → <code>onlineUsers</code> / <code>socketUsers</code> 관리
+├─ <span class="filetag sock">SOCKET</span>p2p          → P2P 요청 상태, signaling 이벤트 처리
+├─ <span class="filetag sock">SOCKET</span>room         → 그룹 방, peer, transport, producer/consumer 상태 관리
+├─ <span class="filetag sock">SOCKET</span>mediasoup    → worker, transport, group socket 이벤트
+├─ <span class="filetag infra">INFRA</span>config       → env, db, cors, mediasoup config
+├─ <span class="filetag infra">INFRA</span>utils        → logger, helper
+├─ <span class="filetag infra">INFRA</span>container/   → PostgreSQL 컨테이너 관련 구조
+├─ <span class="filetag infra">INFRA</span>sql/         → 스키마 SQL
+└─ <span class="filetag infra">INFRA</span>docker-compose.yml → DB 컨테이너 정의</div></div>
+    <div class="role-board">
+      <div class="card"><h3>색상 구분</h3><p class="muted"><span class="filetag app">APP</span> 일반 애플리케이션 계층 / <span class="filetag sock">SOCKET</span> 실시간 소켓 서비스 계층 / <span class="filetag infra">INFRA</span> 실행 환경 및 인프라 계층</p></div>
+      <div class="table"><div class="head">구분</div><div class="head">담당</div><div class="head">대표 파일</div><div>Controller</div><div>HTTP 요청/응답</div><div>auth.controller.js</div><div>Service</div><div>업무 흐름 조합</div><div>auth.service.js, room.service.js</div><div>Repository</div><div>DB query</div><div>user.repository.js</div><div>Manager</div><div>메모리 상태 관리</div><div>presence.manager.js, p2p.manager.js, room.manager.js</div><div>Socket Event</div><div>실시간 이벤트 연결</div><div>p2p.socket.js, mediasoup.socket.js</div><div>Config</div><div>실행 환경 정의</div><div>env.js, db.js</div></div>
+      <div class="card soft"><h3>핵심</h3><p><b>Manager 계층</b>과 <b>Socket Event 계층</b>이 프로젝트의 핵심이다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Environment</div><h2>.env 구성과 사용 위치</h2></div><div class="page">06 / 20</div></div>
+  <div class="env-grid">
+    <div class="env-card"><h3>SERVER / GOOGLE / DATABASE</h3><ul><li><code>PORT</code>, <code>HOST_IP</code>, <code>PUBLIC_PATH</code> → 서버 실행 주소</li><li><code>CLIENT_ID</code>, <code>CLIENT_SECRET</code>, <code>CALLBACK_PATH</code>, <code>CLIENT_ORIGIN</code> → Google OAuth URL / callback</li><li><code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code> → PostgreSQL pool 생성</li><li><b>사용 위치</b>: <code>src/config/env.js</code>, <code>src/auth/auth.service.js</code>, <code>src/config/db.js</code></li></ul></div>
+    <div class="env-card"><h3>JWT / P2P</h3><ul><li><code>ACCESS_SECRET</code>, <code>REFRESH_SECRET</code>, <code>COOKIE_MAX_AGE</code>, <code>SAME_SITE</code>, <code>SECURE</code> → 토큰 발급과 쿠키 옵션</li><li><code>P2P_ROOM_ID_LENGTH</code>, <code>P2P_REQUEST_TIMEOUT_MS</code>, <code>P2P_PASSWORD_LENGTH</code> → P2P 요청 생성과 만료 처리</li><li><b>사용 위치</b>: <code>src/auth/jwt.service.js</code>, <code>src/auth/auth.controller.js</code>, <code>src/p2p/p2p.manager.js</code></li></ul></div>
+    <div class="env-card"><h3>GROUP / MEDIASOUP</h3><ul><li><code>GROUP_ROOM_CODE_LENGTH</code>, <code>GROUP_ROOM_PASSWORD_LENGTH</code> → 그룹 방 코드 / 비밀번호</li><li><code>MEDIASOUP_LISTEN_IP</code>, <code>ANNOUNCED_ADDRESS</code>, <code>RTC_MIN_PORT</code>, <code>RTC_MAX_PORT</code> → transport listen 정보</li><li><code>INITIAL_AVAILABLE_OUTGOING_BITRATE</code> 등 → transport 옵션</li><li><b>사용 위치</b>: <code>src/mediasoup/worker.js</code>, <code>src/mediasoup/mediasoup.service.js</code></li></ul></div>
+    <div class="env-card"><h3>LAN TEST / NGINX</h3><ul><li><code>HOST_IP=0.0.0.0</code>, <code>MEDIASOUP_LISTEN_IP=0.0.0.0</code></li><li><code>ANNOUNCED_ADDRESS=&lt;LAN IP&gt;</code> → 같은 네트워크 기기에서 접속</li><li>Nginx로 정적 파일 제공 및 동일 네트워크 테스트 환경 구성</li></ul></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Authentication</div><h2>인증 / 인가 흐름</h2></div><div class="page">07 / 20</div></div>
+  <div class="flow-board">
+    <div class="flow-panel"><h3>HTTP 기준 흐름</h3><div class="steps"><div class="step"><div class="n">1</div><b>index.html</b><span>로그인 시작</span></div><div class="step"><div class="n">2</div><b><code>/auth/login</code></b><span>Google 로그인 redirect</span></div><div class="step"><div class="n">3</div><b>Google callback</b><span>authorization code 수신</span></div><div class="step"><div class="n">4</div><b>userinfo 조회</b><span><code>sub</code>, <code>email</code>, <code>name</code></span></div><div class="step"><div class="n">5</div><b>users DB</b><span>조회 또는 생성</span></div><div class="step"><div class="n">6</div><b>JWT Cookie</b><span>대시보드 이동</span></div></div><div class="card soft" style="margin-top:14px"><p><b><code>loadMe()</code></b>는 <code>/auth/me</code> 호출에 실패하면 <code>/auth/refresh</code> 후 다시 <code>/auth/me</code>를 요청한다.</p></div></div>
+    <div class="flow-panel"><h3>Socket.IO 기준 흐름</h3><div class="steps"><div class="step"><div class="n">1</div><b>socket connect</b><span>쿠키 포함 연결</span></div><div class="step"><div class="n">2</div><b>accessToken 검사</b><span>middleware 인증</span></div><div class="step"><div class="n">3</div><b><code>socket.data.user</code></b><span>인증 사용자 저장</span></div><div class="step"><div class="n">4</div><b>presence 등록</b><span><code>onlineUsers</code> 추가</span></div><div class="step"><div class="n">5</div><b>이벤트 등록</b><span>P2P / Group 사용 가능</span></div></div><div class="card soft" style="margin-top:14px"><p>로그인한 사용자만 <code>dashboard.html</code>, <code>p2p.html</code>, <code>room.html</code>과 실시간 이벤트를 사용할 수 있다.</p></div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">State Managers</div><h2>서버 메모리 상태관리</h2></div><div class="page">08 / 20</div></div>
+  <div class="state-grid">
+    <div class="state-card"><div class="state-file"><span class="label">[관리 계층 파일]:</span><code>src/presence/presence.manager.js</code></div><h3>onlineUsers + socketUsers</h3><p class="muted">현재 접속중인 사용자와 다중 socket을 관리한다. <b>socketUsers</b>는 역인덱스 역할을 한다.</p><div class="codeblock">onlineUsers = Map&lt;userId, {
+  user: { id, name, email },
+  sockets: Set&lt;socketId&gt;,
+  status: "online"
+}&gt;
+
+socketUsers = Map&lt;socketId, userId&gt;
+
+addUserSocket(user, socketId)
+removeUserSocket(socketId)</div></div>
+    <div class="state-card"><div class="state-file"><span class="label">[관리 계층 파일]:</span><code>src/p2p/p2p.manager.js</code></div><h3>p2pRequests</h3><p class="muted">1:1 통화 요청 상태를 저장한다. 비밀번호는 hash로 저장하고, 타임아웃으로 정리한다.</p><div class="codeblock">p2pRequests = Map&lt;requestId, {
+  caller: { userId, socketId, nickname },
+  callee: { userId, socketId, nickname } | null,
+  passwordHash,
+  createdAt,
+  expiresAt,
+  timerId
+}&gt;
+
+createRequest(...)
+setCallee(...)
+closeRequest(...)</div></div>
+    <div class="state-card"><div class="state-file"><span class="label">[관리 계층 파일]:</span><code>src/room/room.manager.js</code></div><h3>rooms</h3><p class="muted">그룹 회의방의 Router와 Peer별 미디어 객체를 관리한다.</p><div class="codeblock">rooms = Map&lt;roomCode, {
+  router,
+  passwordHash,
+  hostUserId,
+  peers: Map&lt;userId, {
+    socketIds,
+    nickname,
+    sendTransport,
+    recvTransport,
+    producers: { video, audio, screen },
+    consumers: Map&lt;consumerId, consumer&gt;,
+    role
+  }&gt;,
+  graceTimers,
+  createdAt
+}&gt;</div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">P2P Flow</div><h2>P2P 통화 흐름</h2></div><div class="page">09 / 20</div></div>
+  <div class="image-frame full-img"><img data-src="assets/p2p-flow.png" alt="P2P 흐름"><div class="placeholder"><b>P2P 흐름 이미지</b><p><code>assets/p2p-flow.png</code> 파일을 넣으면 표시됩니다.</p></div></div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">mediasoup Internals</div><h2>그룹 통화에서 서버가 관리하는 것</h2></div><div class="page">10 / 20</div></div>
+  <div class="media-internals">
+    <div class="stack-cards">
+      <div class="accent-card p"><h3>Single Worker</h3><p class="muted">서버 시작 시 1개 생성</p></div>
+      <div class="accent-card t"><h3>Router</h3><p class="muted">그룹 방마다 생성</p></div>
+      <div class="accent-card b"><h3>Peer</h3><p class="muted"><code>socketIds</code>, <code>nickname</code>, <code>role</code></p></div>
+      <div class="accent-card g"><h3>Transport</h3><p class="muted"><code>sendTransport</code> / <code>recvTransport</code></p></div>
+      <div class="accent-card o"><h3>Producer</h3><p class="muted">video / audio / screen</p></div>
+      <div class="accent-card p"><h3>Consumer</h3><p class="muted">상대방 producer 소비</p></div>
+    </div>
+    <div class="card"><h3>Room 내부 구조</h3><div class="codeblock" style="margin-top:12px">room
+├─ router
+├─ hostUserId
+├─ passwordHash
+├─ peers
+│  └─ peer(userId)
+│     ├─ socketIds
+│     ├─ nickname / role
+│     ├─ sendTransport
+│     ├─ recvTransport
+│     ├─ producers.video / audio / screen
+│     └─ consumers(Map)
+└─ graceTimers</div><div class="accent-card g" style="margin-top:14px"><h3>정리 함수</h3><p><code>removeUser()</code> → <code>closeUser()</code> → <code>closeRoom()</code></p></div></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Group Flow</div><h2>그룹 통화 흐름</h2></div><div class="page">11 / 20</div></div>
+  <div class="image-frame full-img"><img data-src="assets/group-flow.png" alt="그룹 통화 흐름"><div class="placeholder"><b>그룹 통화 흐름 이미지</b><p><code>assets/group-flow.png</code> 파일을 넣으면 표시됩니다.</p></div></div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">Database</div><h2>DB 설계와 사용 범위</h2></div><div class="page">12 / 20</div></div>
+  <div class="env-grid">
+    <div class="accent-card g"><h3>users <span class="chip accent-green">실사용</span></h3><ul><li><code>id</code> BIGSERIAL PK</li><li><code>google_id</code> UNIQUE NOT NULL</li><li><code>email</code> UNIQUE</li><li><code>profile_image_link</code> TEXT</li><li><code>name</code> VARCHAR(100)</li><li><code>created_at</code>, <code>updated_at</code>, <code>last_login_at</code></li></ul></div>
+    <div class="accent-card o"><h3>rooms <span class="chip accent-orange">설계 / SQL</span></h3><ul><li><code>id</code> PK</li><li><code>room_code</code> UNIQUE</li><li><code>title</code></li><li><code>host_user_id</code> FK</li><li><code>created_at</code></li></ul></div>
+    <div class="accent-card o"><h3>room_participants</h3><ul><li><code>id</code> PK</li><li><code>room_id</code> FK</li><li><code>user_id</code> FK</li><li><code>joined_at</code> / <code>left_at</code></li></ul></div>
+    <div class="accent-card o"><h3>activity_logs</h3><ul><li><code>id</code> PK</li><li><code>user_id</code> FK</li><li><code>action_type</code></li><li><code>detail</code></li><li><code>created_at</code></li></ul></div>
+  </div>
+</section>
+
+<section class="slide">
+  <div class="topbar"><div><div class="eyebrow">API / Event</div><h2>주요 API / Event 명세</h2></div><div class="page">13 / 20</div></div>
+  <div class="api-layout">
+    <div class="api-left">
+      <div class="card"><h3>필수적으로 바로 보여줄 것</h3><ul><li>HTTP 인증 API</li><li>P2P socket 이벤트</li><li>Group socket 이벤트</li><li>클라이언트 사용 이벤트 / 서버 처리 이벤트 구분</li></ul></div>
+      <div class="card soft"><h3>구분</h3><p><span class="chip accent-blue">Client 사용</span> 브라우저에서 emit / fetch 하는 요청</p><p style="margin-top:8px"><span class="chip accent-purple">Server 처리</span> Socket.IO / HTTP handler 내부 처리</p></div>
+    </div>
+    <div class="api-right"><div class="scroll">
+      <details class="api-card" open><summary>HTTP 인증 API</summary><div class="api-body"><div class="kv"><div class="k">Client</div><div><code>/auth/login</code>, <code>/auth/me</code>, <code>/auth/refresh</code>, <code>/auth/logout</code></div><div class="k">Server</div><div><code>/auth/google/callback</code>에서 code 처리, users 조회/생성, JWT 쿠키 발급</div></div></div></details>
+      <details class="api-card"><summary>P2P Socket Events</summary><div class="api-body"><div class="kv"><div class="k">Client 사용</div><div><code>p2p:create</code>, <code>p2p:host-ready</code>, <code>p2p:join</code>, <code>p2p:offer</code>, <code>p2p:answer</code>, <code>p2p:ice-candidate</code>, <code>p2p:connected</code></div><div class="k">Server 처리</div><div>방 생성, 비밀번호 hash 검증, callee 등록, offer/answer/ICE 중계, connected 이후 request 정리</div></div></div></details>
+      <details class="api-card"><summary>Group Socket Events</summary><div class="api-body"><div class="kv"><div class="k">Client 사용</div><div><code>group:create</code>, <code>group:join</code>, <code>group:get-router-rtp-capabilities</code>, <code>group:create-send-transport</code>, <code>group:connect-send-transport</code>, <code>group:produce</code>, <code>group:create-recv-transport</code>, <code>group:consume</code>, <code>group:leave</code></div><div class="k">Server 처리</div><div>Router 조회/생성, transport 연결, producer/consumer 생성, new-producer 알림, room-closed 처리</div></div></div></details>
+      <details class="api-card"><summary>문서 / devTest</summary><div class="api-body"><div class="kv"><div class="k">문서</div><div><code>docs/devLog</code>, <code>docs/pages_on_doing</code>, <code>README</code>, <code>.env.example</code></div><div class="k">테스트</div><div>브라우저 2개, 같은 네트워크 기기, Nginx 정적 제공 환경에서 직접 확인</div></div></div></details>
+    </div></div>
+  </div>
+</section>
+
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Code Proof</div><h2>코드 작업 ① 인증 흐름</h2></div><div class="page">14 / 20</div></div><div class="code-layout"><div class="image-frame"><img data-src="assets/01-auth-controller.png" alt="auth"><div class="placeholder"><b>인증 흐름 코드 이미지</b><p><code>assets/01-auth-controller.png</code></p></div></div><div class="caption"><h3>파일</h3><div class="path">src/auth/auth.controller.js</div><ul><li>OAuth callback 처리</li><li>Google userinfo 조회</li><li>users 조회/생성</li><li>JWT 쿠키 발급</li></ul></div></div></section>
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Code Proof</div><h2>코드 작업 ② P2P 시그널링</h2></div><div class="page">15 / 20</div></div><div class="code-layout"><div class="image-frame"><img data-src="assets/02-p2p-socket.png" alt="p2p"><div class="placeholder"><b>P2P 시그널링 코드 이미지</b><p><code>assets/02-p2p-socket.png</code></p></div></div><div class="caption"><h3>파일</h3><div class="path">src/p2p/p2p.socket.js</div><ul><li>P2P 요청 생성 / 참가</li><li>offer / answer / ICE 전달</li><li>연결 완료 후 request 정리</li></ul></div></div></section>
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Code Proof</div><h2>코드 작업 ③ Room 상태 관리자</h2></div><div class="page">16 / 20</div></div><div class="code-layout"><div class="image-frame"><img data-src="assets/03-room-manager.png" alt="room"><div class="placeholder"><b>Room manager 코드 이미지</b><p><code>assets/03-room-manager.png</code></p></div></div><div class="caption"><h3>파일</h3><div class="path">src/room/room.manager.js</div><ul><li><code>rooms Map</code> 관리</li><li>peer / transport / producer / consumer 저장</li><li>사용자 퇴장과 방 정리</li></ul></div></div></section>
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Code Proof</div><h2>코드 작업 ④ mediasoup 이벤트</h2></div><div class="page">17 / 20</div></div><div class="code-layout"><div class="image-frame"><img data-src="assets/04-mediasoup-socket.png" alt="mediasoup"><div class="placeholder"><b>mediasoup 이벤트 코드 이미지</b><p><code>assets/04-mediasoup-socket.png</code></p></div></div><div class="caption"><h3>파일</h3><div class="path">src/mediasoup/mediasoup.socket.js</div><ul><li>group 이벤트 진입점</li><li><code>dtlsParameters</code>, <code>rtpParameters</code> 처리</li><li>Producer / Consumer 이벤트 연결</li></ul></div></div></section>
+
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Process Evidence</div><h2>개발 로그와 초기 설계 자료</h2></div><div class="page">18 / 20</div></div><div class="two-images"><div class="image-frame"><img data-src="assets/05-devlog.png" alt="devlog"><div class="placeholder"><b>devLog 이미지</b><p><code>assets/05-devlog.png</code></p></div></div><div class="image-frame"><img data-src="assets/06-notion-design.png" alt="notion"><div class="placeholder"><b>Notion 이미지</b><p><code>assets/06-notion-design.png</code></p></div></div></div></section>
+
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Scope Review</div><h2>구현한 것 · 아직 부족한 것 · 이후 하고 싶은 것</h2></div><div class="page">19 / 20</div></div><div class="check-grid"><div class="check-card"><h3>✅ 구현</h3><ul><li><span class="mark ok">✓</span><span>Google OAuth</span></li><li><span class="mark ok">✓</span><span>JWT access / refresh</span></li><li><span class="mark ok">✓</span><span>Socket.IO 인증</span></li><li><span class="mark ok">✓</span><span>P2P RTCPeerConnection</span></li><li><span class="mark ok">✓</span><span>mediasoup 그룹 통화</span></li><li><span class="mark ok">✓</span><span>서버 메모리 상태관리</span></li><li><span class="mark ok">✓</span><span>Docker PostgreSQL</span></li><li><span class="mark ok">✓</span><span>로그아웃</span></li><li><span class="mark ok">✓</span><span>CSS 정리</span></li><li><span class="mark ok">✓</span><span>같은 네트워크 + Nginx 테스트</span></li></ul></div><div class="check-card"><h3>⚠️ 아직 부족한 부분</h3><ul><li><span class="mark mid">~</span><span>rooms / participants / logs 영속화</span></li><li><span class="mark mid">~</span><span>사용자 지연과 예외 흐름 처리</span></li><li><span class="mark mid">~</span><span>disconnect 시나리오 보강</span></li><li><span class="mark mid">~</span><span>코드 정리와 테스트 코드</span></li></ul></div><div class="check-card"><h3>⬜ 이후 하고 싶은 것</h3><ul><li><span class="mark no">□</span><span>Redis 기반 상태 저장</span></li><li><span class="mark no">□</span><span>activity_logs 저장과 조회 UI</span></li><li><span class="mark no">□</span><span>TURN 서버 구성</span></li><li><span class="mark no">□</span><span>온라인 배포 / 운영 환경 구성</span></li><li><span class="mark no">□</span><span>타임아웃과 예외 흐름 정교화</span></li></ul></div></div></section>
+
+<section class="slide"><div class="topbar"><div><div class="eyebrow">Retrospective</div><h2>회고</h2></div><div class="page">20 / 20</div></div><div class="retro"><div class="card"><h3>어려웠던 점</h3><ul><li>WebRTC, SFU 서버, 이벤트 기반 프로그래밍, 웹소켓, 미디어스트림 / 트랙 개별 설정은 각각 크게 어렵지 않았다.</li><li>하지만 이 요소들이 <b>복합적으로 연결</b>되면서 전체 복잡도가 크게 올라갔다.</li><li>방학 기간 안에 마감을 맞춰야 한다는 초조함 때문에 생산성이 떨어질 때가 있었다.</li><li>서버 메모리 상태를 철저하게 관리하는 것도 쉽지 않았고, 한 번에 모두 생각하다 보니 정리에 시간이 많이 들었다.</li></ul><div class="quote">각 기술 하나하나는 이해할 수 있었지만, 여러 상태와 이벤트가 동시에 움직이는 순간부터 진짜 어렵다는 걸 느꼈다.</div></div><div class="card"><h3>배운 점</h3><ul><li>상태 기반으로 실시간 이벤트를 연결하는 방식에 익숙해졌다.</li><li>P2P와 SFU의 차이를 실제 코드로 비교하고 경험했다.</li><li>실제 배포 환경에서 생길 수 있는 네트워크 문제(NAT, 타임아웃)와 예측과 다른 이벤트 순서로 인한 상태 변화를 미리 겪어볼 수 있었다.</li><li>복잡한 시스템은 기능보다도 <b>상태 정리와 예외 처리</b>가 중요하다는 점을 배웠다.</li></ul><div class="quote">이번 프로젝트를 통해 단순 구현보다, 복잡도가 올라갈 때 구조를 어떻게 잡아야 하는지에 대해 더 많이 배웠다.</div></div></div></section>
+
+</main>
+<div class="presenter"><span id="counter">1 / 20</span><span>← → 또는 버튼으로 이동</span></div><div class="controls"><button id="prev">이전</button><button id="next">다음</button></div>
+<script>
+const slides=[...document.querySelectorAll('.slide')]; let idx=0; const c=document.getElementById('counter');
+function show(n){idx=Math.max(0,Math.min(slides.length-1,n)); slides.forEach((s,i)=>s.classList.toggle('active',i===idx)); c.textContent=`${idx+1} / ${slides.length}`; location.hash=`slide-${idx+1}`;}
+document.getElementById('next').onclick=()=>show(idx+1); document.getElementById('prev').onclick=()=>show(idx-1);
+document.addEventListener('keydown',e=>{ if(['ArrowRight','PageDown',' '].includes(e.key)) show(idx+1); if(['ArrowLeft','PageUp'].includes(e.key)) show(idx-1); if(e.key==='Home') show(0); if(e.key==='End') show(slides.length-1); });
+const m=location.hash.match(/slide-(\d+)/); show(m?Number(m[1])-1:0);
+document.querySelectorAll('img[data-src]').forEach(img=>{ const src=img.dataset.src; const frame=img.parentElement; const placeholder=frame.querySelector('.placeholder'); img.onload=()=>{ if(placeholder) placeholder.remove(); }; img.onerror=()=>{ img.style.display='none'; }; img.src=src; });
+</script>
+</body></html>

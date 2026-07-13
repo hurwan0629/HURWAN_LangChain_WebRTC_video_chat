@@ -114,6 +114,10 @@ export function registerP2PSocket(io, socket) {
     }
   })
 
+  /**
+   * callee가 정상적으로 들어오면 닉네임 설정해주는 이벤트. 
+   * 해당 이벤트 이후 caller에게 offer하라는 요청이 감
+   */
   socket.on("p2p:callee-nickname", ({requestId, nickname}, callback) => {
     // 닉네임 설정해주기
     const userId = socket.data.user.id
@@ -126,6 +130,7 @@ export function registerP2PSocket(io, socket) {
       // host nickname
       const hostNickname = P2PManager.getHostNickname(requestId)
 
+      // callee에게 기다리라고 알림
       socket.emit("p2p:wait-offer", {
         requestId,
         caller: {
@@ -158,7 +163,7 @@ export function registerP2PSocket(io, socket) {
   }) 
 
   // // // // // // // // [signalling 작업 (ice-candidate 작업)] // // // // // // // //
-  // 1. 한쪽에서 먼저 offer 요청하기
+  // 1. 한쪽에서 먼저 offer 요청하기 (caller이 요청)
   socket.on("p2p:offer", ({requestId, offer}) => {
     logger("/p2p p2p:offer", `from=${socket.id}, to=${P2PManager.getOtherPeer(socket.id, requestId)}, requestId=${requestId}, hasOffer=${!!offer}`)
     // 자신이 아닌 socketId(userId)로 emit("p2p:offer" , offer) 보내기

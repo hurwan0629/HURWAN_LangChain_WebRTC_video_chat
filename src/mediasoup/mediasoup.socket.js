@@ -9,6 +9,7 @@ export function registerMediasoupSocket(io, socket) {
   // 1. host가 dashboard에서 group:create 요청 넣음
   socket.on("group:create", async ({ hostNickname }, callback) => {
     try {
+      // 이때 누가 호스트인지 식별 가능하게 등록
       const hostUserId = socket.data.user.id
 
       logger("/mediasoup/mediasoup.socket.js group:create", 
@@ -38,7 +39,7 @@ export function registerMediasoupSocket(io, socket) {
   socket.on("group:host-ready", async ({ roomCode }, callback ) => {
     const userId = socket.data.user.id
     try {
-
+      // 여기에서 호스트의 socket과 passwordHash 생성
       const { ok, plainPassword } = await GroupRoomService.tryHostReady({ roomCode, userId, socketId: socket.id })
       // 호스트가 아니면 
       if(!ok) {
@@ -94,7 +95,7 @@ export function registerMediasoupSocket(io, socket) {
       })
     }
   })
-  // 5. send transport 준비하기
+  // 5. send transport 준비하기 (1. Transport 생성. 2. produce 해주기)
   socket.on("group:create-send-transport", async ({ roomCode }, callback) => {
     try {
       const userId = socket.data.user.id
@@ -288,6 +289,7 @@ export function registerMediasoupSocket(io, socket) {
   socket.on("group:join", async ({ roomCode, passwordInput, nickname }, callback) => {
     try {
       const userId = socket.data.user.id
+      // 비밀번호 확인
       const result = await GroupRoomService.checkRoomAndPasswordInput({ roomCode, passwordInput, userId, socketId: socket.id, nickname })
 
       if(result) {
@@ -395,7 +397,7 @@ export function registerMediasoupSocket(io, socket) {
     }
   })
 
-  // 나가는 경우 이벤트 추가해주기
+  // 나가는 경우 이벤트 추가해주기 (여기에서도 isHost분기 있음)
   socket.on("disconnect", () => {
     const roomCode = socket.data.groupRoomCode
     if (!roomCode) return

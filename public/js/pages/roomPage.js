@@ -96,7 +96,7 @@ async function candidateBranch(socket) {
   }
 
   try{
-    alert(1)
+    // alert(1)
     await readyDevice(socket)
   }
   catch( error ) {
@@ -113,7 +113,7 @@ async function readyDevice(socket, device=localDevice) {
 
   const rtpCapabilitiesResult = await socket.emitWithAck("group:get-router-rtp-capabilities", { roomCode })
 
-  alert(3)
+  // alert(3)
   if(!rtpCapabilitiesResult.ok) {
     alert("존재하지 않는 방입니다.")
     window.location.href="dashboard.html"
@@ -227,7 +227,7 @@ async function readyDevice(socket, device=localDevice) {
 
 
         if(result.ok) {
-          alert(`${consumer.id} consumer 성공! mediaTag: ${consumerOptions.mediaTag}`)
+          // alert(`${consumer.id} consumer 성공! mediaTag: ${consumerOptions.mediaTag}`)
         }
         else {
           alert(`${consumer.id} consumer 실패... mediaTag: ${consumerOptions.mediaTag}`)

@@ -16,6 +16,9 @@ logger("/app/app.js", "어플리케이션 미들웨어가 등록되었습니다.
 app.use("/auth", authRoutes)
 
 // 개발 테스트용 url (무조건 주석이든 뭐든 걸고 배포하기)
-app.use("/devTest", devTestRoutes)
+// app.use("/devTest", devTestRoutes)
+if(process.env.NODE_ENV !== "production") {
+  app.use("/devTest", devTestRoutes)
+}
 
 export default app

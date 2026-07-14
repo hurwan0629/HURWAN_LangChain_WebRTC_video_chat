@@ -98,3 +98,46 @@ npm run dev
 - src/mediasoup: 그룹 화상 회의 transport/producer/consumer
 - src/room: 그룹 방 상태 관리
 - public: 정적 HTML, CSS, 클라이언트 JS
+
+## Deployment notes
+
+### Runtime
+
+- Node.js 22 or newer is required.
+- Development:
+
+```bash
+npm run dev
+```
+
+- Production:
+
+```bash
+npm start
+```
+
+### Required environment notes
+
+- `NODE_ENV`: use `production` on the online server.
+- `JWT_SAME_SITE`: use one of `lax`, `strict`, or `none`. It is not a boolean.
+- `MEDIASOUP_RTC_MIN_PORT`: minimum mediasoup RTC port. Demo default: `40000`.
+- `MEDIASOUP_RTC_MAX_PORT`: maximum mediasoup RTC port. Demo default: `40500`.
+
+For the Lightsail single-server deployment, use the following shape:
+
+```env
+HOST_IP=127.0.0.1
+MEDIASOUP_LISTEN_IP=0.0.0.0
+MEDIASOUP_ANNOUNCED_ADDRESS=<Lightsail Static Public IP>
+MEDIASOUP_RTC_MIN_PORT=40000
+MEDIASOUP_RTC_MAX_PORT=40500
+```
+
+Open these Lightsail firewall ports for mediasoup:
+
+```text
+UDP 40000-40500
+TCP 40000-40500
+```
+
+The current online users, rooms, and P2P request state are stored in Node.js memory `Map` objects. Run a single Node.js process for the demo.

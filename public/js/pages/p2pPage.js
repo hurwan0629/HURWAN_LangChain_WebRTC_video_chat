@@ -90,7 +90,7 @@ async function connectToP2PRoom(socket) {
     plainPassword = passwordResult.password
     // alert(`해당 방의 비밀번호는 [${passwordResult.password}] 입니다.`)
 
-    console.log(`(호스트) 방의 코드: [${requestId}] | 비밀번호: [${passwordResult.password}]`)
+    // console.log(`(호스트) 방의 코드: [${requestId}] | 비밀번호: [${passwordResult.password}]`)
     passwordDiv.innerText += `(호스트) 방의 코드: [${requestId}] | 비밀번호: [${passwordResult.password}]`
 
     // 미리 connection 준비 등록시켜놓고 바로 socket.on("p2p:callee-ready") 등록을 위해 
@@ -106,7 +106,7 @@ async function connectToP2PRoom(socket) {
       // alert("offer created")
       
       await callerPeerConnection.setLocalDescription(offer)
-      alert("local description set")
+      // alert("local description set")
 
       socket.emit("p2p:offer", { requestId, offer })
     })
@@ -123,7 +123,7 @@ async function connectToP2PRoom(socket) {
   // 위에서 들어가지 못했다면 방에 들어가있는지 확인하고 들어가주기
   // callee 인 경우로 판단
   else {
-    console.log(passwordResult.message)
+    // console.log(passwordResult.message)
     const passwordInput = prompt("비밀번호를 입력하세요")
     const joinResult = await socket.emitWithAck("p2p:join", { requestId, passwordInput })
     // join 되었으면 닉네임 설정해주기

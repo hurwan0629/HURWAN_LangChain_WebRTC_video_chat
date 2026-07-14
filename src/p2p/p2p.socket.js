@@ -83,11 +83,11 @@ export function registerP2PSocket(io, socket) {
    */
   socket.on("p2p:join", async ({ requestId, passwordInput }, callback) => {
     const userId = socket.data.user.id
-    logger("/p2p/p2p.socket.js p2p:join", `requestId: ${requestId}, passwordInput: ${passwordInput}`)
+    // logger("/p2p/p2p.socket.js p2p:join", `requestId: ${requestId}, passwordInput: ${passwordInput}`)
     try {
       // 비밀번호 잘 입력했는지 확인하기
       const passwordResult = await P2PManager.checkRequestIdPasswordInput(requestId, passwordInput)
-      logger("/p2p/p2p.socket.js p2p:join", `passwordResult: ${passwordResult}`)
+      // logger("/p2p/p2p.socket.js p2p:join", `passwordResult: ${passwordResult}`)
       if(!passwordResult) {
         callback({
           ok: false,

@@ -42,6 +42,22 @@ const sameSite = ["none", "lax", "strict"].includes(sameSiteValue)
 const MEDIASOUP_ENABLE_UDP = required("MEDIASOUP_ENABLE_UDP", "true") !== "false" ? true : false
 const MEDIASOUP_ENABLE_TCP = required("MEDIASOUP_ENABLE_TCP", "true") !== "false" ? true : false
 const MEDIASOUP_ENABLE_SCTP = required("MEDIASOUP_ENABLE_SCTP", "false") !== "true" ? false : true
+const mediasoupRtcMinPortValue = required("MEDIASOUP_RTC_MIN_PORT", "40000")
+const mediasoupRtcMaxPortValue = required("MEDIASOUP_RTC_MAX_PORT", "40500")
+const mediasoupRtcMinPort = Number.parseInt(mediasoupRtcMinPortValue, 10)
+const mediasoupRtcMaxPort = Number.parseInt(mediasoupRtcMaxPortValue, 10)
+
+if (
+  !/^\d+$/.test(mediasoupRtcMinPortValue) ||
+  !/^\d+$/.test(mediasoupRtcMaxPortValue) ||
+  !Number.isInteger(mediasoupRtcMinPort) ||
+  !Number.isInteger(mediasoupRtcMaxPort) ||
+  mediasoupRtcMinPort < 1024 ||
+  mediasoupRtcMaxPort > 65535 ||
+  mediasoupRtcMinPort > mediasoupRtcMaxPort
+) {
+  throw new Error("[config/env.js] Invalid mediasoup RTC port range")
+}
 
 const config = {
   host: {
@@ -104,6 +120,8 @@ const config = {
     enableTcp: MEDIASOUP_ENABLE_TCP,
     initialOutgoingBitrate: parseInt(required("MEDIASOUP_INITIAL_OUTGOING_BITRATE", "1000000")),
     enableSctp: MEDIASOUP_ENABLE_SCTP,
+    rtcMinPort: mediasoupRtcMinPort,
+    rtcMaxPort: mediasoupRtcMaxPort,
   }
 
 }

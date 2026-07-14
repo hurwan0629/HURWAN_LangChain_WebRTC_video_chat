@@ -15,8 +15,8 @@ export async function initMediasoupWorker() {
   }
 
   worker = await mediasoup.createWorker({
-    rtcMinPort: 40000,
-    rtcMaxPort: 49999
+    rtcMinPort: config.mediasoup.rtcMinPort,
+    rtcMaxPort: config.mediasoup.rtcMaxPort,
   })
 
   worker.on("died", () => {

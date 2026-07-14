@@ -10,7 +10,7 @@ export async function hashPassword(password) {
 }
 
 export async function comparePassword(password, passwordHash) {
-  logger("/utils/comparePassword", `password: ${password}, passwordHash: ${passwordHash}`)
+  // logger("/utils/comparePassword", `password: ${password}, passwordHash: ${passwordHash}`)
   return await bcrypt.compare(password, passwordHash)
 }
 

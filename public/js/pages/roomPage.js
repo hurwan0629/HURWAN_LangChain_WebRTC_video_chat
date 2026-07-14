@@ -109,7 +109,7 @@ async function readyDevice(socket, device=localDevice) {
     throw Error("[readyDevice] socket not connected")
   }
 
-  alert(`2 socket.connected=${socket.connected}, id=${socket.id}`)
+  // alert(`2 socket.connected=${socket.connected}, id=${socket.id}`)
 
   const rtpCapabilitiesResult = await socket.emitWithAck("group:get-router-rtp-capabilities", { roomCode })
 
@@ -124,7 +124,7 @@ async function readyDevice(socket, device=localDevice) {
     })
   }
   
-  alert("미디어 준비 시작")
+  // alert("미디어 준비 시작")
 
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: true,

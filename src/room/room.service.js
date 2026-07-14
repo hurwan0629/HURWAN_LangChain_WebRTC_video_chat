@@ -41,8 +41,8 @@ export async function tryHostReady({ roomCode, userId, socketId }) {
   // bcrypt 랜덤으로 만들어거 등록 및 반환해주기
   const plainPassword = await createPasswordHashAndReturnPlain({ roomCode })
 
-  logger("/room/room.service.js tryHostReady", 
-    `isHost: ${isHost}, hostAddedResult: ${hostAddedResult}, plainPassword: ${!!plainPassword},`)
+  // logger("/room/room.service.js tryHostReady", 
+  //   `isHost: ${isHost}, hostAddedResult: ${hostAddedResult}, plainPassword: ${!!plainPassword},`)
   return {
     ok: true,
     plainPassword
@@ -71,8 +71,8 @@ export async function createPasswordHashAndReturnPlain({ roomCode }) {
   const passwordHash = await hashPassword(plainPassword)
   const setRoomPasswordHashResult = GroupRoomManager.setRoomPasswordHash({ roomCode, passwordHash }) 
 
-  logger("/room/room.service.js createPasswordHashAndReturnPlain", 
-    `plainPassword: ${!!plainPassword}, passwordHash: ${!!passwordHash}, setRoomPasswordHashResult: ${setRoomPasswordHashResult},`)
+  // logger("/room/room.service.js createPasswordHashAndReturnPlain", 
+  //   `plainPassword: ${!!plainPassword}, passwordHash: ${!!passwordHash}, setRoomPasswordHashResult: ${setRoomPasswordHashResult},`)
 
   return plainPassword
 }
@@ -169,14 +169,14 @@ export async function checkRoomAndPasswordInput({ roomCode, passwordInput, userI
   const passwordResult = await GroupRoomManager.checkPasswordByRoomCodeAndPasswordInput({ roomCode, passwordInput })
 
   if(!passwordResult) {
-    logger("/room/room.service.js checkRoomAndPasswordInput", 
-      `passwordResult: false, userId: ${userId}, passwordInput: ${passwordInput}`)
+    // logger("/room/room.service.js checkRoomAndPasswordInput", 
+    //   `passwordResult: false, userId: ${userId}, passwordInput: ${passwordInput}`)
     return false
   }
   else {
     const addResult = await GroupRoomManager.addPeerToGroupRoom({ roomCode, userId, socketId, nickname })
-    logger("/room/room.service.js checkRoomAndPasswordInput", 
-      `passwordResult: true, userId: ${userId}, roomCode: ${roomCode}, socketId: ${socketId}`)
+    // logger("/room/room.service.js checkRoomAndPasswordInput", 
+    //   `passwordResult: true, userId: ${userId}, roomCode: ${roomCode}, socketId: ${socketId}`)
     return addResult && passwordResult
   }
 }

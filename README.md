@@ -23,7 +23,7 @@
 
 ---
 
-- [NOTION](https://app.notion.com/p/WebRTC-398117a41d4d80aaa14cdc25833ef964?source=copy_link)
+- [NOTION]([https://app.notion.com/p/WebRTC-398117a41d4d80aaa14cdc25833ef964](https://app.notion.com/p/WebRTC-398117a41d4d80aaa14cdc25833ef964?source=copy_link))
 
 ---
 
